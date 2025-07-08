@@ -1,0 +1,107 @@
+# zPrefix 插件主配置文件
+# 版本: 1.0
+
+# 调试模式
+debug: false
+
+# 玩家设置
+player:
+  # 是否在玩家第一次加入时显示欢迎信息
+  show-welcome-message: false
+
+# 数据库配置
+database:
+  # 数据存储类型: file(文件) 或 mysql(数据库)
+  type: file
+  # 文件存储路径
+  file-path: "data/player_titles.yml"
+
+# GUI配置
+gui:
+  # GUI标题
+  title: "§6§l称号系统"
+  # GUI大小 (固定54槽位 = 6行)
+  size: 54
+  # 称号显示区域: 前5行 (槽位 0-44, 共45个位置)
+  # 按钮区域: 最后1行 (槽位 45-53, 共9个位置)
+
+  # 填充物品 (用于装饰最后一行)
+  fill-item:
+    material: "GRAY_STAINED_GLASS_PANE"
+    name: " "
+
+  # 按钮配置
+  buttons:
+    # 上一页按钮
+    previous-page:
+      slot: 45  # 最后一行第1个位置
+      material: "ARROW"
+      name: "§a◀ 上一页"
+      lore:
+        - "§7点击查看上一页称号"
+        - "§7当前页: §e{current_page}"
+        - "§7总页数: §e{total_pages}"
+
+    # 页面信息显示
+    page-info:
+      slot: 49  # 最后一行中间位置
+      material: "BOOK"
+      name: "§6页面信息"
+      lore:
+        - "§7当前页: §e{current_page} §7/ §e{total_pages}"
+        - "§7称号总数: §e{total_titles}"
+        - "§7已解锁: §a{unlocked_titles}"
+
+    # 下一页按钮
+    next-page:
+      slot: 53  # 最后一行最后位置
+      material: "ARROW"
+      name: "§a下一页 ▶"
+      lore:
+        - "§7点击查看下一页称号"
+        - "§7当前页: §e{current_page}"
+        - "§7总页数: §e{total_pages}"
+
+    # 关闭按钮
+    close:
+      slot: 47  # 最后一行左侧
+      material: "BARRIER"
+      name: "§c✖ 关闭"
+      lore:
+        - "§7点击关闭界面"
+
+    # 刷新按钮
+    refresh:
+      slot: 51  # 最后一行右侧
+      material: "EMERALD"
+      name: "§a⟲ 刷新"
+      lore:
+        - "§7点击刷新界面"
+        - "§7重新加载称号数据"
+
+# 进度统计配置
+progress:
+  # 是否启用进度统计功能
+  enabled: true
+
+  # 检查间隔（秒）- 多久检查一次玩家是否满足解锁条件
+  check-interval: 60
+
+  # 是否在玩家加入时立即检查解锁条件
+  check-on-join: true
+
+  # 是否启用详细的调试日志
+  debug-logging: false
+
+# 注意: 称号显示功能已移除
+# 请使用聊天插件配合PlaceholderAPI来实现称号显示
+# 可用的占位符: %zprefix_current%, %zprefix_prefix%, %zprefix_count% 等
+
+# 默认设置
+defaults:
+  # 新玩家默认称号 (留空表示无称号)
+  default-title: ""
+  # 是否自动保存数据
+  auto-save: true
+  # 自动保存间隔 (秒)
+  save-interval: 300

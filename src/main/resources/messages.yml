@@ -1,0 +1,91 @@
+# zPrefix 消息配置文件
+# 所有插件输出的消息都在这里自定义配置
+# 支持颜色代码 (&a, §a) 和占位符 {player}, {title} 等
+
+# 通用消息
+common:
+  prefix: "§7[§6zPrefix§7] "
+  no-permission: "§c你没有权限执行此命令！"
+  player-only: "§c此命令只能由玩家执行！"
+  player-not-found: "§c找不到玩家: §e{player}"
+  invalid-args: "§c参数错误！请使用正确的命令格式"
+  config-reloaded: "§a配置文件已重新加载！"
+  error: "§c发生错误: §e{error}"
+  unknown-subcommand: "§c未知的子命令！使用 §e/title help §c查看帮助"
+
+# 称号相关消息
+title:
+  # 成功消息
+  title-set: "§a✓ 成功切换称号为: §f{title}"
+  title-removed: "§a✓ 已移除当前称号"
+  title-unlocked: "§6✦ §a恭喜！你解锁了新称号: §f{title} §6✦"
+  title-given: "§a✓ 成功给予玩家 §e{player} §a称号: §f{title}"
+  title-taken: "§a✓ 成功移除玩家 §e{player} §a的称号: §f{title}"
+
+  # 错误消息
+  title-not-found: "§c✗ 称号不存在: §e{title}"
+  title-not-unlocked: "§c✗ 你还没有解锁此称号！"
+  title-already-unlocked: "§c✗ 玩家 §e{player} §c已经拥有称号: §f{title}"
+  title-not-owned: "§c✗ 玩家 §e{player} §c没有称号: §f{title}"
+  no-titles: "§c✗ 你还没有解锁任何称号！使用 §e/title §c打开称号界面查看解锁条件"
+  same-title: "§c✗ 你已经在使用此称号了！"
+
+  # 信息消息
+  current-title: "§e当前称号: §f{title}"
+  no-current-title: "§7当前没有使用任何称号"
+  unlocked-titles: "§e已解锁的称号 §7({count}个)§e: §f{titles}"
+  title-info: "§6=== §f{title} §6称号信息 ==="
+  title-count: "§e你已解锁 §a{unlocked} §e/ §7{total} §e个称号"
+
+# GUI相关消息
+gui:
+  title-gui: "§6§l称号系统"
+  locked-title: "§c§l✗ 未解锁"
+  current-title-lore: "§a§l✓ 当前使用中"
+  click-to-select: "§e§l» 点击切换称号"
+  click-to-unlock: "§c需要满足解锁条件才能使用"
+  page-info: "§7第 §e{current} §7页，共 §e{total} §7页"
+  no-titles-available: "§7暂无可用称号"
+
+# 命令帮助
+help:
+  title-command: "§6§l=== zPrefix 称号系统命令帮助 ==="
+  title-gui: "§e/title §7- §f打开称号GUI界面"
+  title-set: "§e/title set <称号> §7- §f切换到指定称号"
+  title-remove: "§e/title remove §7- §f移除当前称号"
+  title-list: "§e/title list §7- §f查看已解锁的称号列表"
+  title-info: "§e/title info <称号> §7- §f查看称号详细信息"
+  title-give: "§e/title give <玩家> <称号> §7- §f给予玩家称号 §c(管理员)"
+  title-take: "§e/title take <玩家> <称号> §7- §f移除玩家称号 §c(管理员)"
+  title-reload: "§e/title reload §7- §f重新加载配置文件 §c(管理员)"
+  footer: "§7提示: 称号解锁基于你的游戏统计数据，多多游戏即可解锁更多称号！"
+
+# 统计相关消息
+stats:
+  unlock-check: "§7正在检查称号解锁条件..."
+  stats-updated: "§7统计数据已更新"
+  auto-unlock-disabled: "§7此称号无法自动解锁"
+  admin-only-title: "§7此称号只能由管理员给予"
+
+# 系统消息
+system:
+  plugin-enabled: "§azPrefix 称号系统已启用"
+  plugin-disabled: "§czPrefix 称号系统已禁用"
+  data-saved: "§a数据已保存"
+  data-loaded: "§a数据已加载"
+  vanilla-stats-mode: "§a使用Minecraft原版统计数据系统"
+  check-interval: "§7称号检查间隔: §e{interval} §7秒"
+
+# 属性名称翻译
+attributes:
+  GENERIC_MAX_HEALTH: "生命值"
+  GENERIC_FOLLOW_RANGE: "跟随范围"
+  GENERIC_KNOCKBACK_RESISTANCE: "击退抗性"
+  GENERIC_MOVEMENT_SPEED: "移动速度"
+  GENERIC_FLYING_SPEED: "飞行速度"
+  GENERIC_ATTACK_DAMAGE: "攻击力"
+  GENERIC_ATTACK_KNOCKBACK: "攻击击退"
+  GENERIC_ATTACK_SPEED: "攻击速度"
+  GENERIC_ARMOR: "防御力"
+  GENERIC_ARMOR_TOUGHNESS: "盔甲韧性"
+  GENERIC_LUCK: "幸运值"

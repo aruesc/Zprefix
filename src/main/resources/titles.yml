@@ -1,0 +1,251 @@
+# 称号配置文件
+# 定义所有可用的称号及其属性
+
+titles:
+  # 新手称号
+  newbie:
+    display-name: "§7新手"
+    item:
+      material: "WOODEN_SWORD"
+      name: "§7新手称号"
+      lore:
+        - "§7适合刚加入服务器的新玩家"
+        - "§7这是每个人的起点"
+        - ""
+        - "§a属性加成: §7无"
+        - ""
+        - "§e点击切换称号"
+    # 原生Minecraft属性
+    attributes: {}
+    # SagaLoreStats属性
+    saga-attributes: {}
+    # 获得条件
+    unlock-conditions:
+      auto-unlock: true
+    # 是否默认称号
+    default: true
+
+  # 勇士称号 - 需要击杀100只怪物
+  warrior:
+    display-name: "§c勇士"
+    item:
+      material: "IRON_SWORD"
+      name: "§c勇士称号"
+      lore:
+        - "§c勇敢无畏的战士"
+        - "§c在战斗中展现英勇"
+        - ""
+        - "§a解锁条件:"
+        - "§a  击杀怪物: §e100只"
+        - ""
+        - "§a原生属性:"
+        - "§a  攻击力 +2"
+        - "§a  生命值 +4"
+        - ""
+        - "§b自定义属性:"
+        - "§b  攻击力 +10"
+        - "§b  生命力 +50"
+        - ""
+        - "§e点击切换称号"
+    # 原生Minecraft属性
+    attributes:
+      GENERIC_ATTACK_DAMAGE: 2.0
+      GENERIC_MAX_HEALTH: 4.0
+    # SagaLoreStats属性
+    saga-attributes:
+      攻击力: 10
+      生命力: 50
+    unlock-conditions:
+      auto-unlock: false  # 不自动解锁
+      kill-mobs: 100      # 需要击杀100只怪物
+
+  # 测试称号 - 只有auto-unlock: false，没有其他条件
+  test_title:
+    display-name: "§d测试"
+    item:
+      material: "STICK"
+      name: "§d测试称号"
+      lore:
+        - "§d这是一个测试称号"
+        - "§d应该不会自动解锁"
+        - ""
+        - "§c解锁条件: 无法自动解锁"
+        - ""
+        - "§e点击切换称号"
+    attributes: {}
+    saga-attributes: {}
+    unlock-conditions:
+      auto-unlock: false  # 只有这个条件，应该不会自动解锁
+
+  # 守护者称号
+  guardian:
+    display-name: "§9守护者"
+    item:
+      material: "SHIELD"
+      name: "§9守护者称号"
+      lore:
+        - "§9世界的坚实守护者"
+        - "§9用盾牌保护同伴"
+        - ""
+        - "§a原生属性:"
+        - "§a  防御力 +3"
+        - "§a  生命值 +6"
+        - "§a  击退抗性 +0.2"
+        - ""
+        - "§b自定义属性:"
+        - "§b  防御力 +15"
+        - "§b  生命力 +80"
+        - "§b  格挡率 +5%"
+        - ""
+        - "§e点击切换称号"
+    # 原生Minecraft属性
+    attributes:
+      GENERIC_ARMOR: 3.0
+      GENERIC_MAX_HEALTH: 6.0
+      GENERIC_KNOCKBACK_RESISTANCE: 0.2
+    # SagaLoreStats属性
+    saga-attributes:
+      防御力: 15
+      生命力: 80
+      格挡率: 5
+    unlock-conditions:
+      auto-unlock: false
+      # 受到伤害总量
+      damage-taken: 1000
+
+  # 疾风称号
+  swift:
+    display-name: "§b疾风"
+    item:
+      material: "FEATHER"
+      name: "§b疾风称号"
+      lore:
+        - "§b如风般迅速敏捷"
+        - "§b速度就是一切"
+        - ""
+        - "§a原生属性:"
+        - "§a  移动速度 +0.05"
+        - "§a  攻击速度 +0.1"
+        - ""
+        - "§b自定义属性:"
+        - "§b  移动速度 +0.2"
+        - "§b  闪避率 +8%"
+        - ""
+        - "§e点击切换称号"
+    # 原生Minecraft属性
+    attributes:
+      GENERIC_MOVEMENT_SPEED: 0.05
+      GENERIC_ATTACK_SPEED: 0.1
+    # SagaLoreStats属性
+    saga-attributes:
+      移动速度: 0.2
+      闪避率: 8
+    unlock-conditions:
+      auto-unlock: false
+      # 移动距离 (米)
+      walk-distance: 10000
+
+  # 幸运儿称号
+  lucky:
+    display-name: "§e幸运儿"
+    item:
+      material: "GOLDEN_APPLE"
+      name: "§e幸运儿称号"
+      lore:
+        - "§e被幸运女神眷顾"
+        - "§e好运总是伴随左右"
+        - ""
+        - "§a原生属性:"
+        - "§a  幸运值 +2"
+        - ""
+        - "§b自定义属性:"
+        - "§b  幸运值 +15"
+        - "§b  掉落率 +20%"
+        - ""
+        - "§e点击切换称号"
+    # 原生Minecraft属性
+    attributes:
+      GENERIC_LUCK: 2.0
+    # SagaLoreStats属性
+    saga-attributes:
+      幸运值: 15
+      掉落率: 20
+    unlock-conditions:
+      auto-unlock: false
+      # 特殊事件触发
+      special-event: "find-diamond"
+
+  # 矿工称号
+  miner:
+    display-name: "§8矿工"
+    item:
+      material: "DIAMOND_PICKAXE"
+      name: "§8矿工称号"
+      lore:
+        - "§8经验丰富的矿工"
+        - "§8发现了珍贵的钻石"
+        - ""
+        - "§a解锁条件:"
+        - "§a  找到钻石矿"
+        - ""
+        - "§a原生属性:"
+        - "§a  幸运值 +1"
+        - ""
+        - "§b自定义属性:"
+        - "§b  挖掘速度 +20%"
+        - ""
+        - "§e点击切换称号"
+    # 原生Minecraft属性
+    attributes:
+      GENERIC_LUCK: 1.0
+    # SagaLoreStats属性
+    saga-attributes:
+      挖掘速度: 20
+    unlock-conditions:
+      auto-unlock: false
+      # 找到钻石矿
+      special-event: "find-diamond"
+
+  # 传奇称号
+  legend:
+    display-name: "§6§l传奇"
+    item:
+      material: "NETHERITE_SWORD"
+      name: "§6§l传奇称号"
+      lore:
+        - "§6§l传说中的存在"
+        - "§6§l只有最强者才能获得"
+        - ""
+        - "§a原生属性:"
+        - "§a  攻击力 +4"
+        - "§a  生命值 +10"
+        - "§a  防御力 +2"
+        - "§a  移动速度 +0.03"
+        - ""
+        - "§b自定义属性:"
+        - "§b  攻击力 +50"
+        - "§b  生命力 +200"
+        - "§b  防御力 +30"
+        - "§b  暴击率 +10%"
+        - "§b  暴击伤害 +25%"
+        - ""
+        - "§c§l稀有度: 传说级"
+        - ""
+        - "§e点击切换称号"
+    # 原生Minecraft属性
+    attributes:
+      GENERIC_ATTACK_DAMAGE: 4.0
+      GENERIC_MAX_HEALTH: 10.0
+      GENERIC_ARMOR: 2.0
+      GENERIC_MOVEMENT_SPEED: 0.03
+    # SagaLoreStats属性
+    saga-attributes:
+      攻击力: 50
+      生命力: 200
+      防御力: 30
+      暴击率: 10
+      暴击伤害: 25
+    unlock-conditions:
+      auto-unlock: false
+      # 需要管理员手动给予
+      admin-only: true

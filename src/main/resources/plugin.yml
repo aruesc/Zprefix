@@ -1,0 +1,39 @@
+name: zPrefix
+version: '1.0-SNAPSHOT'
+main: dyzg.zPrefix.ZPrefix
+api-version: '1.20'
+author: dyzg
+description: 玩家称号系统插件，支持称号切换和属性加成
+softdepend: [SagaLoreStats, PlaceholderAPI]
+
+commands:
+  title:
+    description: 称号系统主命令
+    usage: /title [gui|set|remove|list|info|give|take|reload] [参数]
+    aliases: [titles, prefix]
+
+permissions:
+  zprefix.*:
+    description: 所有zPrefix权限
+    children:
+      zprefix.use: true
+      zprefix.admin: true
+  zprefix.use:
+    description: 使用称号系统的基本权限
+    default: true
+  zprefix.admin:
+    description: 管理员权限
+    default: op
+    children:
+      zprefix.give: true
+      zprefix.take: true
+      zprefix.reload: true
+  zprefix.give:
+    description: 给予玩家称号的权限
+    default: op
+  zprefix.take:
+    description: 移除玩家称号的权限
+    default: op
+  zprefix.reload:
+    description: 重新加载配置的权限
+    default: op
