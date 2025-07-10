@@ -37,6 +37,10 @@ title:
   title-info: "§6=== §f{title} §6称号信息 ==="
   title-count: "§e你已解锁 §a{unlocked} §e/ §7{total} §e个称号"
 
+  # 刷新和清理消息
+  cleanup-success: "§a✓ 已清理 §c{count} §a个无效称号"
+  refresh-success: "§a✓ 界面已刷新，数据已更新"
+
 # GUI相关消息
 gui:
   title-gui: "§6§l称号系统"

@@ -3,8 +3,64 @@ plugins {
     id("xyz.jpenilla.run-paper") version "2.3.1"
 }
 
-group = 'dyzg'
-version = '1.0-SNAPSHOT'
+// ==================== 版本管理系统 ====================
+// 版本管理
+def versionFile = file('version.properties')
+def currentVersion = '1.0.0.1'
+
+// 读取当前版本
+if (versionFile.exists()) {
+    def props = new Properties()
+    versionFile.withInputStream { props.load(it) }
+    currentVersion = props.getProperty('version', '1.0.0.1')
+}
+
+// 自动迭代版本号
+def getNextVersion(String currentVer) {
+    def versionParts = currentVer.split('\\.')
+    if (versionParts.length >= 4) {
+        def major = versionParts[0] as int
+        def minor = versionParts[1] as int
+        def patch = versionParts[2] as int
+        def build = versionParts[3] as int
+
+        // 迭代版本号：第四位+1
+        build++
+
+        return "${major}.${minor}.${patch}.${build}"
+    } else if (versionParts.length == 3) {
+        // 如果只有三位版本号，添加第四位
+        return "${currentVer}.1"
+    }
+    return currentVer
+}
+
+// 检查是否正在执行setVersion任务
+def isSetVersionTask = gradle.startParameter.taskNames.any { it.contains('setVersion') }
+
+def newVersion
+if (isSetVersionTask) {
+    // 如果是setVersion任务，不自动迭代版本
+    newVersion = currentVersion
+    println "正在执行版本设置任务，跳过自动版本迭代"
+} else {
+    // 获取新版本号并立即更新
+    newVersion = getNextVersion(currentVersion)
+
+    // 更新 version.properties
+    def props = new Properties()
+    props.setProperty('version', newVersion)
+    props.setProperty('lastBuild', new Date().toString())
+    props.setProperty('buildCount', String.valueOf(newVersion.split('\\.')[3]))
+    props.setProperty('buildTime', System.currentTimeMillis().toString())
+    props.setProperty('buildBy', System.getProperty('user.name'))
+    versionFile.withOutputStream { props.store(it, 'Auto-incremented version for zPrefix') }
+
+    println "zPrefix版本已从 ${currentVersion} 更新到 ${newVersion}"
+}
+
+group = 'com.github.chengge'
+version = newVersion
 
 repositories {
     mavenCentral()
@@ -58,11 +114,11 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 processResources {
-    def props = [version: version]
-    inputs.properties props
+    def templateProps = [version: version]
+    inputs.properties templateProps
     filteringCharset 'UTF-8'
     filesMatching('plugin.yml') {
-        expand props
+        expand templateProps
     }
 }
 
@@ -89,4 +145,119 @@ javadoc {
 
     // 失败时不停止构建
     failOnError = false
+}
+
+// ==================== 版本管理任务 ====================
+
+/**
+ * 显示当前版本信息
+ */
+task showVersion {
+    group = 'version'
+    description = '显示当前版本信息'
+
+    doLast {
+        def versionPropsFile = file('version.properties')
+        if (versionPropsFile.exists()) {
+            def versionProps = new Properties()
+            versionPropsFile.withInputStream { versionProps.load(it) }
+
+            println "==================== zPrefix 版本信息 ===================="
+            println "当前版本: ${versionProps.getProperty('version', 'Unknown')}"
+            println "构建次数: ${versionProps.getProperty('buildCount', 'Unknown')}"
+            println "最后构建: ${versionProps.getProperty('lastBuild', 'Unknown')}"
+            println "构建时间: ${new Date(versionProps.getProperty('buildTime', '0') as long)}"
+            println "构建用户: ${versionProps.getProperty('buildBy', 'Unknown')}"
+            println "========================================================"
+        } else {
+            println "版本文件不存在，将在下次构建时创建"
+        }
+    }
+}
+
+/**
+ * 重置版本号
+ */
+task resetVersion {
+    group = 'version'
+    description = '重置版本号到 1.0.0.1'
+
+    doLast {
+        def resetVersionFile = file('version.properties')
+        def resetProps = new Properties()
+        resetProps.setProperty('version', '1.0.0.1')
+        resetProps.setProperty('lastBuild', new Date().toString())
+        resetProps.setProperty('buildCount', '1')
+        resetProps.setProperty('buildTime', System.currentTimeMillis().toString())
+        resetProps.setProperty('buildBy', System.getProperty('user.name'))
+        resetVersionFile.withOutputStream { resetProps.store(it, 'Reset version for zPrefix') }
+
+        println "版本已重置为 1.0.0.1"
+    }
+}
+
+/**
+ * 设置自定义版本号
+ */
+task setVersion {
+    group = 'version'
+    description = '设置自定义版本号 (使用 -PnewVersion=x.x.x.x)'
+
+    doLast {
+        def customVersion = project.findProperty('newVersion')
+        if (customVersion == null) {
+            println "请使用 -PnewVersion=x.x.x.x 参数指定版本号"
+            println "例如: gradle setVersion -PnewVersion=1.2.3.4"
+            return
+        }
+
+        // 验证版本号格式
+        if (!customVersion.matches(/^\d+\.\d+\.\d+\.\d+$/)) {
+            println "版本号格式错误，请使用 x.x.x.x 格式 (例如: 1.2.3.4)"
+            return
+        }
+
+        def customVersionFile = file('version.properties')
+        def customProps = new Properties()
+        customProps.setProperty('version', customVersion.toString())
+        customProps.setProperty('lastBuild', new Date().toString())
+        customProps.setProperty('buildCount', customVersion.split('\\.')[3])
+        customProps.setProperty('buildTime', System.currentTimeMillis().toString())
+        customProps.setProperty('buildBy', System.getProperty('user.name'))
+        customVersionFile.withOutputStream { customProps.store(it, 'Custom version set for zPrefix') }
+
+        println "版本已设置为 ${customVersion}"
+    }
+}
+
+/**
+ * 构建发布版本
+ */
+task buildRelease {
+    group = 'build'
+    description = '构建发布版本 (清理 + 构建 + 显示版本信息)'
+
+    dependsOn clean, build, showVersion
+
+    doLast {
+        def jarFile = file("$buildDir/libs/zPrefix-${version}.jar")
+        if (jarFile.exists()) {
+            println ""
+            println "==================== 构建完成 ===================="
+            println "发布版本: ${version}"
+            println "JAR文件: ${jarFile.absolutePath}"
+            println "文件大小: ${String.format('%.2f KB', jarFile.length() / 1024.0)}"
+            println "=================================================="
+        }
+    }
+}
+
+// 确保任务执行顺序
+clean.mustRunAfter resetVersion, setVersion
+build.mustRunAfter clean
+showVersion.mustRunAfter build
+
+// 在构建前显示版本信息
+build.doFirst {
+    println "正在构建 zPrefix v${version}..."
 }

@@ -1,44 +1,120 @@
-# 称号配置文件
-# 定义所有可用的称号及其属性
+# zPrefix 称号配置文件
+# 基于优化后的统计系统设计的完整称号体系
+# 包含新手、进阶、专业、大师、传奇等不同等级的称号
 
 titles:
-  # 新手称号
+  # ==================== 新手系列 ====================
+
+  # 新手称号 - 自动解锁
   newbie:
     display-name: "§7新手"
     item:
       material: "WOODEN_SWORD"
-      name: "§7新手称号"
+      name: "§7新手"
       lore:
-        - "§7适合刚加入服务器的新玩家"
-        - "§7这是每个人的起点"
+        - "§7刚踏入服务器的新人"
+        - "§7每个人的起点"
         - ""
-        - "§a属性加成: §7无"
+        - "§7属性加成: §8无"
         - ""
         - "§e点击切换称号"
-    # 原生Minecraft属性
+        - "§8使用 /title info 新手 查看详细信息"
     attributes: {}
-    # SagaLoreStats属性
     saga-attributes: {}
-    # 获得条件
     unlock-conditions:
       auto-unlock: true
-    # 是否默认称号
     default: true
 
-  # 勇士称号 - 需要击杀100只怪物
+  # 初学者称号 - 游戏1小时
+  beginner:
+    display-name: "§8初学者"
+    item:
+      material: "STONE_SWORD"
+      name: "§8初学者"
+      lore:
+        - "§8开始熟悉游戏的玩家"
+        - "§8已经度过了最初的时光"
+        - ""
+        - "§a属性加成:"
+        - "§a  生命值 +2"
+        - ""
+        - "§e点击切换称号"
+        - "§8使用 /title info 初学者 查看详细信息"
+    attributes:
+      GENERIC_MAX_HEALTH: 2.0
+    saga-attributes: {}
+    unlock-conditions:
+      auto-unlock: false
+      play-time: 1.0
+
+  # 冒险者称号 - 行走1公里 + 跳跃100次
+  adventurer:
+    display-name: "§2冒险者"
+    item:
+      material: "LEATHER_BOOTS"
+      name: "§2冒险者"
+      lore:
+        - "§2喜欢探索世界的玩家"
+        - "§2脚步遍布各个角落"
+        - ""
+        - "§a属性加成:"
+        - "§a  生命值 +2"
+        - "§a  移动速度 +0.01"
+        - ""
+        - "§e点击切换称号"
+        - "§8使用 /title info 冒险者 查看详细信息"
+    attributes:
+      GENERIC_MAX_HEALTH: 2.0
+      GENERIC_MOVEMENT_SPEED: 0.01
+    saga-attributes: {}
+    unlock-conditions:
+      auto-unlock: false
+      walk-distance: 1000.0
+      jump: 100
+
+  # ==================== 战斗系列 ====================
+
+  # 战士称号 - 击杀50只怪物
   warrior:
-    display-name: "§c勇士"
+    display-name: "§c战士"
     item:
       material: "IRON_SWORD"
-      name: "§c勇士称号"
+      name: "§c战士"
       lore:
-        - "§c勇敢无畏的战士"
-        - "§c在战斗中展现英勇"
+        - "§c初入战场的战士"
+        - "§c开始展现战斗技巧"
         - ""
-        - "§a解锁条件:"
-        - "§a  击杀怪物: §e100只"
+        - "§a属性加成:"
+        - "§a  攻击力 +1"
+        - "§a  生命值 +2"
         - ""
-        - "§a原生属性:"
+        - "§b自定义属性:"
+        - "§b  攻击力 +5"
+        - "§b  生命力 +25"
+        - ""
+        - "§e点击切换称号"
+        - "§8使用 /title info 战士 查看详细信息"
+    attributes:
+      GENERIC_ATTACK_DAMAGE: 1.0
+      GENERIC_MAX_HEALTH: 2.0
+    saga-attributes:
+      攻击力: 5
+      生命力: 25
+    unlock-conditions:
+      auto-unlock: false
+      kill-mobs: 50
+
+  # 勇士称号 - 击杀200只怪物 + 受伤500点
+  brave:
+    display-name: "§c勇士"
+    item:
+      material: "DIAMOND_SWORD"
+      name: "§c勇士"
+      lore:
+        - "§c经验丰富的勇敢战士"
+        - "§c在战斗中百折不挠"
+        - ""
+        - "§a属性加成:"
         - "§a  攻击力 +2"
         - "§a  生命值 +4"
         - ""
@@ -47,205 +123,794 @@ titles:
         - "§b  生命力 +50"
         - ""
         - "§e点击切换称号"
-    # 原生Minecraft属性
+        - "§8使用 /title info brave 查看详细信息"
     attributes:
       GENERIC_ATTACK_DAMAGE: 2.0
       GENERIC_MAX_HEALTH: 4.0
-    # SagaLoreStats属性
     saga-attributes:
       攻击力: 10
       生命力: 50
     unlock-conditions:
-      auto-unlock: false  # 不自动解锁
-      kill-mobs: 100      # 需要击杀100只怪物
+      auto-unlock: false
+      kill-mobs: 200
+      damage-taken: 500.0
 
-  # 测试称号 - 只有auto-unlock: false，没有其他条件
-  test_title:
-    display-name: "§d测试"
+  # 战神称号 - 击杀1000只怪物 + PVP击杀10次
+  warlord:
+    display-name: "§4战神"
     item:
-      material: "STICK"
-      name: "§d测试称号"
+      material: "NETHERITE_SWORD"
+      name: "§4战神"
       lore:
-        - "§d这是一个测试称号"
-        - "§d应该不会自动解锁"
+        - "§4传说中的战斗大师"
+        - "§4无人能敌的战神"
         - ""
-        - "§c解锁条件: 无法自动解锁"
+        - "§a属性加成:"
+        - "§a  攻击力 +4"
+        - "§a  生命值 +8"
+        - "§a  攻击速度 +0.1"
+        - ""
+        - "§b自定义属性:"
+        - "§b  攻击力 +25"
+        - "§b  生命力 +100"
+        - "§b  暴击率 +5%"
         - ""
         - "§e点击切换称号"
-    attributes: {}
-    saga-attributes: {}
+        - "§8使用 /title info warlord 查看详细信息"
+    attributes:
+      GENERIC_ATTACK_DAMAGE: 4.0
+      GENERIC_MAX_HEALTH: 8.0
+      GENERIC_ATTACK_SPEED: 0.1
+    saga-attributes:
+      攻击力: 25
+      生命力: 100
+      暴击率: 5
     unlock-conditions:
-      auto-unlock: false  # 只有这个条件，应该不会自动解锁
+      auto-unlock: false
+      kill-mobs: 1000
+      player-kills: 10
 
-  # 守护者称号
+  # ==================== 防御系列 ====================
+
+  # 守护者称号 - 受伤1000点
   guardian:
     display-name: "§9守护者"
     item:
       material: "SHIELD"
-      name: "§9守护者称号"
+      name: "§9守护者"
       lore:
-        - "§9世界的坚实守护者"
-        - "§9用盾牌保护同伴"
+        - "§9坚韧不拔的守护者"
+        - "§9用身躯保护同伴"
         - ""
-        - "§a原生属性:"
-        - "§a  防御力 +3"
+        - "§a解锁条件:"
+        - "§a  受到伤害: §e1000点"
+        - ""
+        - "§a属性加成:"
+        - "§a  防御力 +2"
         - "§a  生命值 +6"
+        - ""
+        - "§b自定义属性:"
+        - "§b  防御力 +10"
+        - "§b  生命力 +60"
+        - ""
+        - "§e点击切换称号"
+    attributes:
+      GENERIC_ARMOR: 2.0
+      GENERIC_MAX_HEALTH: 6.0
+    saga-attributes:
+      防御力: 10
+      生命力: 60
+    unlock-conditions:
+      auto-unlock: false
+      damage-taken: 1000.0
+
+  # 坚盾称号 - 受伤2000点 + 死亡5次
+  shield_master:
+    display-name: "§1坚盾"
+    item:
+      material: "NETHERITE_CHESTPLATE"
+      name: "§1坚盾"
+      lore:
+        - "§1无法击破的坚固盾牌"
+        - "§1经历无数战斗的老兵"
+        - ""
+        - "§a解锁条件:"
+        - "§a  受到伤害: §e2000点"
+        - "§a  死亡次数: §e5次"
+        - ""
+        - "§a属性加成:"
+        - "§a  防御力 +4"
+        - "§a  生命值 +10"
         - "§a  击退抗性 +0.2"
         - ""
         - "§b自定义属性:"
-        - "§b  防御力 +15"
-        - "§b  生命力 +80"
-        - "§b  格挡率 +5%"
+        - "§b  防御力 +20"
+        - "§b  生命力 +120"
+        - "§b  格挡率 +8%"
         - ""
         - "§e点击切换称号"
-    # 原生Minecraft属性
     attributes:
-      GENERIC_ARMOR: 3.0
-      GENERIC_MAX_HEALTH: 6.0
+      GENERIC_ARMOR: 4.0
+      GENERIC_MAX_HEALTH: 10.0
       GENERIC_KNOCKBACK_RESISTANCE: 0.2
-    # SagaLoreStats属性
     saga-attributes:
-      防御力: 15
-      生命力: 80
-      格挡率: 5
+      防御力: 20
+      生命力: 120
+      格挡率: 8
     unlock-conditions:
       auto-unlock: false
-      # 受到伤害总量
-      damage-taken: 1000
+      damage-taken: 2000.0
+      deaths: 5
 
-  # 疾风称号
-  swift:
-    display-name: "§b疾风"
-    item:
-      material: "FEATHER"
-      name: "§b疾风称号"
-      lore:
-        - "§b如风般迅速敏捷"
-        - "§b速度就是一切"
-        - ""
-        - "§a原生属性:"
-        - "§a  移动速度 +0.05"
-        - "§a  攻击速度 +0.1"
-        - ""
-        - "§b自定义属性:"
-        - "§b  移动速度 +0.2"
-        - "§b  闪避率 +8%"
-        - ""
-        - "§e点击切换称号"
-    # 原生Minecraft属性
-    attributes:
-      GENERIC_MOVEMENT_SPEED: 0.05
-      GENERIC_ATTACK_SPEED: 0.1
-    # SagaLoreStats属性
-    saga-attributes:
-      移动速度: 0.2
-      闪避率: 8
-    unlock-conditions:
-      auto-unlock: false
-      # 移动距离 (米)
-      walk-distance: 10000
+  # ==================== 探索系列 ====================
 
-  # 幸运儿称号
-  lucky:
-    display-name: "§e幸运儿"
+  # 旅行者称号 - 行走5公里
+  traveler:
+    display-name: "§3旅行者"
     item:
-      material: "GOLDEN_APPLE"
-      name: "§e幸运儿称号"
+      material: "COMPASS"
+      name: "§3旅行者"
       lore:
-        - "§e被幸运女神眷顾"
-        - "§e好运总是伴随左右"
-        - ""
-        - "§a原生属性:"
-        - "§a  幸运值 +2"
-        - ""
-        - "§b自定义属性:"
-        - "§b  幸运值 +15"
-        - "§b  掉落率 +20%"
-        - ""
-        - "§e点击切换称号"
-    # 原生Minecraft属性
-    attributes:
-      GENERIC_LUCK: 2.0
-    # SagaLoreStats属性
-    saga-attributes:
-      幸运值: 15
-      掉落率: 20
-    unlock-conditions:
-      auto-unlock: false
-      # 特殊事件触发
-      special-event: "find-diamond"
-
-  # 矿工称号
-  miner:
-    display-name: "§8矿工"
-    item:
-      material: "DIAMOND_PICKAXE"
-      name: "§8矿工称号"
-      lore:
-        - "§8经验丰富的矿工"
-        - "§8发现了珍贵的钻石"
+        - "§3热爱旅行的探索者"
+        - "§3足迹遍布大地"
         - ""
         - "§a解锁条件:"
-        - "§a  找到钻石矿"
+        - "§a  行走距离: §e5000米"
         - ""
-        - "§a原生属性:"
+        - "§a属性加成:"
+        - "§a  移动速度 +0.02"
+        - ""
+        - "§b自定义属性:"
+        - "§b  移动速度 +0.1"
+        - ""
+        - "§e点击切换称号"
+    attributes:
+      GENERIC_MOVEMENT_SPEED: 0.02
+    saga-attributes:
+      移动速度: 0.1
+    unlock-conditions:
+      auto-unlock: false
+      walk-distance: 5000.0
+
+  # 探险家称号 - 行走20公里 + 进入下界
+  explorer:
+    display-name: "§6探险家"
+    item:
+      material: "SPYGLASS"
+      name: "§6探险家"
+      lore:
+        - "§6勇敢的维度探险家"
+        - "§6敢于踏足未知领域"
+        - ""
+        - "§a解锁条件:"
+        - "§a  行走距离: §e20000米"
+        - "§a  进入下界"
+        - ""
+        - "§a属性加成:"
+        - "§a  移动速度 +0.05"
         - "§a  幸运值 +1"
         - ""
         - "§b自定义属性:"
-        - "§b  挖掘速度 +20%"
+        - "§b  移动速度 +0.2"
+        - "§b  幸运值 +5"
         - ""
         - "§e点击切换称号"
-    # 原生Minecraft属性
     attributes:
+      GENERIC_MOVEMENT_SPEED: 0.05
       GENERIC_LUCK: 1.0
-    # SagaLoreStats属性
     saga-attributes:
-      挖掘速度: 20
+      移动速度: 0.2
+      幸运值: 5
     unlock-conditions:
       auto-unlock: false
-      # 找到钻石矿
-      special-event: "find-diamond"
+      walk-distance: 20000.0
+      special-event: "enter-nether"
 
-  # 传奇称号
+  # 世界行者称号 - 行走100公里 + 进入所有维度
+  world_walker:
+    display-name: "§d世界行者"
+    item:
+      material: "ENDER_EYE"
+      name: "§d世界行者"
+      lore:
+        - "§d穿越所有维度的行者"
+        - "§d世界的每个角落都有足迹"
+        - ""
+        - "§a解锁条件:"
+        - "§a  总移动距离: §e100000米"
+        - "§a  进入下界"
+        - "§a  进入末地"
+        - ""
+        - "§a属性加成:"
+        - "§a  移动速度 +0.1"
+        - "§a  幸运值 +2"
+        - "§a  生命值 +6"
+        - ""
+        - "§b自定义属性:"
+        - "§b  移动速度 +0.5"
+        - "§b  幸运值 +10"
+        - "§b  生命力 +80"
+        - ""
+        - "§e点击切换称号"
+    attributes:
+      GENERIC_MOVEMENT_SPEED: 0.1
+      GENERIC_LUCK: 2.0
+      GENERIC_MAX_HEALTH: 6.0
+    saga-attributes:
+      移动速度: 0.5
+      幸运值: 10
+      生命力: 80
+    unlock-conditions:
+      auto-unlock: false
+      distance-traveled: 100000.0
+      special-event: "enter-nether"
+      special-event: "enter-end"
+
+  # ==================== 生活系列 ====================
+
+  # 渔夫称号 - 钓鱼100次
+  fisherman:
+    display-name: "§b渔夫"
+    item:
+      material: "FISHING_ROD"
+      name: "§b渔夫"
+      lore:
+        - "§b技艺精湛的渔夫"
+        - "§b总能钓到好鱼"
+        - ""
+        - "§a解锁条件:"
+        - "§a  钓鱼次数: §e100次"
+        - ""
+        - "§a属性加成:"
+        - "§a  幸运值 +1"
+        - ""
+        - "§b自定义属性:"
+        - "§b  幸运值 +5"
+        - ""
+        - "§e点击切换称号"
+    attributes:
+      GENERIC_LUCK: 1.0
+    saga-attributes:
+      幸运值: 5
+    unlock-conditions:
+      auto-unlock: false
+      fish-caught: 100
+
+  # 牧场主称号 - 繁殖50只动物
+  rancher:
+    display-name: "§a牧场主"
+    item:
+      material: "WHEAT"
+      name: "§a牧场主"
+      lore:
+        - "§a经营牧场的专家"
+        - "§a动物们的好朋友"
+        - ""
+        - "§a解锁条件:"
+        - "§a  繁殖动物: §e50只"
+        - ""
+        - "§a属性加成:"
+        - "§a  幸运值 +1"
+        - "§a  生命值 +4"
+        - ""
+        - "§b自定义属性:"
+        - "§b  幸运值 +5"
+        - "§b  生命力 +40"
+        - ""
+        - "§e点击切换称号"
+    attributes:
+      GENERIC_LUCK: 1.0
+      GENERIC_MAX_HEALTH: 4.0
+    saga-attributes:
+      幸运值: 5
+      生命力: 40
+    unlock-conditions:
+      auto-unlock: false
+      animals-bred: 50
+
+  # 生活大师称号 - 钓鱼500次 + 繁殖200只动物 + 游戏100小时
+  life_master:
+    display-name: "§e生活大师"
+    item:
+      material: "GOLDEN_CARROT"
+      name: "§e生活大师"
+      lore:
+        - "§e精通各种生活技能"
+        - "§e享受宁静生活的智者"
+        - ""
+        - "§a解锁条件:"
+        - "§a  钓鱼次数: §e500次"
+        - "§a  繁殖动物: §e200只"
+        - "§a  游戏时间: §e100小时"
+        - ""
+        - "§a属性加成:"
+        - "§a  幸运值 +3"
+        - "§a  生命值 +8"
+        - ""
+        - "§b自定义属性:"
+        - "§b  幸运值 +15"
+        - "§b  生命力 +100"
+        - ""
+        - "§e点击切换称号"
+    attributes:
+      GENERIC_LUCK: 3.0
+      GENERIC_MAX_HEALTH: 8.0
+    saga-attributes:
+      幸运值: 15
+      生命力: 100
+    unlock-conditions:
+      auto-unlock: false
+      fish-caught: 500
+      animals-bred: 200
+      play-time: 100.0
+
+  # ==================== 矿工系列 ====================
+
+  # 煤矿工称号 - 挖掘500个煤矿
+  coal_miner:
+    display-name: "§8煤矿工"
+    item:
+      material: "COAL"
+      name: "§8煤矿工"
+      lore:
+        - "§8勤劳的煤矿工人"
+        - "§8为世界提供燃料"
+        - ""
+        - "§a解锁条件:"
+        - "§a  挖掘煤矿: §e500个"
+        - ""
+        - "§a属性加成:"
+        - "§a  幸运值 +1"
+        - ""
+        - "§b自定义属性:"
+        - "§b  挖掘速度 +10%"
+        - ""
+        - "§e点击切换称号"
+    attributes:
+      GENERIC_LUCK: 1.0
+    saga-attributes:
+      挖掘速度: 10
+    unlock-conditions:
+      auto-unlock: false
+      coal-mined: 500
+
+  # 铁矿工称号 - 挖掘200个铁矿
+  iron_miner:
+    display-name: "§7铁矿工"
+    item:
+      material: "IRON_INGOT"
+      name: "§7铁矿工"
+      lore:
+        - "§7经验丰富的铁矿工"
+        - "§7掌握了铁矿的秘密"
+        - ""
+        - "§a解锁条件:"
+        - "§a  挖掘铁矿: §e200个"
+        - "§a  挖掘煤矿: §e1000个"
+        - ""
+        - "§a属性加成:"
+        - "§a  幸运值 +1"
+        - "§a  生命值 +2"
+        - ""
+        - "§b自定义属性:"
+        - "§b  挖掘速度 +15%"
+        - "§b  生命力 +20"
+        - ""
+        - "§e点击切换称号"
+    attributes:
+      GENERIC_LUCK: 1.0
+      GENERIC_MAX_HEALTH: 2.0
+    saga-attributes:
+      挖掘速度: 15
+      生命力: 20
+    unlock-conditions:
+      auto-unlock: false
+      iron-mined: 200
+      coal-mined: 1000
+
+  # 钻石矿工称号 - 挖掘100个钻石矿
+  diamond_miner:
+    display-name: "§b钻石矿工"
+    item:
+      material: "DIAMOND"
+      name: "§b钻石矿工"
+      lore:
+        - "§b发现钻石的幸运儿"
+        - "§b掌握了钻石的秘密"
+        - ""
+        - "§a解锁条件:"
+        - "§a  挖掘钻石矿: §e100个"
+        - "§a  挖掘铁矿: §e500个"
+        - ""
+        - "§a属性加成:"
+        - "§a  幸运值 +2"
+        - "§a  生命值 +4"
+        - ""
+        - "§b自定义属性:"
+        - "§b  挖掘速度 +25%"
+        - "§b  幸运值 +10"
+        - ""
+        - "§e点击切换称号"
+    attributes:
+      GENERIC_LUCK: 2.0
+      GENERIC_MAX_HEALTH: 4.0
+    saga-attributes:
+      挖掘速度: 25
+      幸运值: 10
+    unlock-conditions:
+      auto-unlock: false
+      diamonds-mined: 100
+      iron-mined: 500
+
+  # 挖矿大师称号 - 挖掘500个钻石矿 + 100个绿宝石矿 + 50个远古残骸
+  master_miner:
+    display-name: "§6§l挖矿大师"
+    item:
+      material: "NETHERITE_PICKAXE"
+      name: "§6§l挖矿大师"
+      lore:
+        - "§6§l传说中的挖矿大师"
+        - "§6§l无人能及的挖矿技艺"
+        - ""
+        - "§a解锁条件:"
+        - "§a  挖掘钻石矿: §e500个"
+        - "§a  挖掘绿宝石矿: §e100个"
+        - "§a  挖掘远古残骸: §e50个"
+        - "§a  破坏方块: §e50000个"
+        - ""
+        - "§a属性加成:"
+        - "§a  幸运值 +5"
+        - "§a  生命值 +10"
+        - "§a  攻击力 +2"
+        - ""
+        - "§b自定义属性:"
+        - "§b  挖掘速度 +50%"
+        - "§b  幸运值 +25"
+        - "§b  生命力 +120"
+        - ""
+        - "§e点击切换称号"
+    attributes:
+      GENERIC_LUCK: 5.0
+      GENERIC_MAX_HEALTH: 10.0
+      GENERIC_ATTACK_DAMAGE: 2.0
+    saga-attributes:
+      挖掘速度: 50
+      幸运值: 25
+      生命力: 120
+    unlock-conditions:
+      auto-unlock: false
+      diamonds-mined: 500
+      emeralds-mined: 100
+      ancient-debris-mined: 50
+      blocks-broken: 50000
+
+  # ==================== 专业击杀系列 ====================
+
+  # 僵尸杀手称号 - 击杀500只僵尸
+  zombie_slayer:
+    display-name: "§2僵尸杀手"
+    item:
+      material: "ROTTEN_FLESH"
+      name: "§2僵尸杀手"
+      lore:
+        - "§2专门猎杀僵尸的猎人"
+        - "§2僵尸们的噩梦"
+        - ""
+        - "§a解锁条件:"
+        - "§a  击杀僵尸: §e500只"
+        - ""
+        - "§a属性加成:"
+        - "§a  攻击力 +1"
+        - "§a  生命值 +2"
+        - ""
+        - "§b自定义属性:"
+        - "§b  攻击力 +8"
+        - "§b  生命力 +30"
+        - ""
+        - "§e点击切换称号"
+    attributes:
+      GENERIC_ATTACK_DAMAGE: 1.0
+      GENERIC_MAX_HEALTH: 2.0
+    saga-attributes:
+      攻击力: 8
+      生命力: 30
+    unlock-conditions:
+      auto-unlock: false
+      zombies-killed: 500
+
+  # 骷髅猎人称号 - 击杀300只骷髅
+  skeleton_hunter:
+    display-name: "§f骷髅猎人"
+    item:
+      material: "BONE"
+      name: "§f骷髅猎人"
+      lore:
+        - "§f精准射击的骷髅猎人"
+        - "§f箭术无人能敌"
+        - ""
+        - "§a解锁条件:"
+        - "§a  击杀骷髅: §e300只"
+        - ""
+        - "§a属性加成:"
+        - "§a  攻击力 +1"
+        - "§a  攻击速度 +0.05"
+        - ""
+        - "§b自定义属性:"
+        - "§b  攻击力 +8"
+        - "§b  暴击率 +3%"
+        - ""
+        - "§e点击切换称号"
+    attributes:
+      GENERIC_ATTACK_DAMAGE: 1.0
+      GENERIC_ATTACK_SPEED: 0.05
+    saga-attributes:
+      攻击力: 8
+      暴击率: 3
+    unlock-conditions:
+      auto-unlock: false
+      skeletons-killed: 300
+
+  # 苦力怕终结者称号 - 击杀200只苦力怕
+  creeper_destroyer:
+    display-name: "§a苦力怕终结者"
+    item:
+      material: "GUNPOWDER"
+      name: "§a苦力怕终结者"
+      lore:
+        - "§a无畏爆炸的勇士"
+        - "§a苦力怕的克星"
+        - ""
+        - "§a解锁条件:"
+        - "§a  击杀苦力怕: §e200只"
+        - ""
+        - "§a属性加成:"
+        - "§a  攻击力 +1"
+        - "§a  击退抗性 +0.1"
+        - ""
+        - "§b自定义属性:"
+        - "§b  攻击力 +8"
+        - "§b  爆炸抗性 +20%"
+        - ""
+        - "§e点击切换称号"
+    attributes:
+      GENERIC_ATTACK_DAMAGE: 1.0
+      GENERIC_KNOCKBACK_RESISTANCE: 0.1
+    saga-attributes:
+      攻击力: 8
+      爆炸抗性: 20
+    unlock-conditions:
+      auto-unlock: false
+      creepers-killed: 200
+
+  # ==================== Boss击杀系列 ====================
+
+  # 屠龙者称号 - 击杀末影龙
+  dragon_slayer:
+    display-name: "§5屠龙者"
+    item:
+      material: "DRAGON_HEAD"
+      name: "§5屠龙者"
+      lore:
+        - "§5击败末影龙的英雄"
+        - "§5传说中的屠龙勇士"
+        - ""
+        - "§a解锁条件:"
+        - "§a  击杀末影龙: §e1条"
+        - ""
+        - "§a属性加成:"
+        - "§a  攻击力 +3"
+        - "§a  生命值 +6"
+        - "§a  幸运值 +2"
+        - ""
+        - "§b自定义属性:"
+        - "§b  攻击力 +20"
+        - "§b  生命力 +80"
+        - "§b  暴击率 +5%"
+        - ""
+        - "§e点击切换称号"
+    attributes:
+      GENERIC_ATTACK_DAMAGE: 3.0
+      GENERIC_MAX_HEALTH: 6.0
+      GENERIC_LUCK: 2.0
+    saga-attributes:
+      攻击力: 20
+      生命力: 80
+      暴击率: 5
+    unlock-conditions:
+      auto-unlock: false
+      ender-dragons-killed: 1
+
+  # 凋零克星称号 - 击杀凋零
+  wither_slayer:
+    display-name: "§8凋零克星"
+    item:
+      material: "WITHER_SKELETON_SKULL"
+      name: "§8凋零克星"
+      lore:
+        - "§8击败凋零的勇士"
+        - "§8不惧死亡的战士"
+        - ""
+        - "§a解锁条件:"
+        - "§a  击杀凋零: §e3只"
+        - ""
+        - "§a属性加成:"
+        - "§a  攻击力 +3"
+        - "§a  防御力 +2"
+        - "§a  生命值 +6"
+        - ""
+        - "§b自定义属性:"
+        - "§b  攻击力 +20"
+        - "§b  防御力 +15"
+        - "§b  生命力 +80"
+        - ""
+        - "§e点击切换称号"
+    attributes:
+      GENERIC_ATTACK_DAMAGE: 3.0
+      GENERIC_ARMOR: 2.0
+      GENERIC_MAX_HEALTH: 6.0
+    saga-attributes:
+      攻击力: 20
+      防御力: 15
+      生命力: 80
+    unlock-conditions:
+      auto-unlock: false
+      withers-killed: 3
+
+  # 传说猎人称号 - 击杀所有Boss
+  legend_hunter:
+    display-name: "§d§l传说猎人"
+    item:
+      material: "NETHERITE_AXE"
+      name: "§d§l传说猎人"
+      lore:
+        - "§d§l击败所有传说生物的猎人"
+        - "§d§l无人能敌的Boss杀手"
+        - ""
+        - "§a解锁条件:"
+        - "§a  击杀末影龙: §e5条"
+        - "§a  击杀凋零: §e10只"
+        - "§a  击杀远古守卫者: §e3只"
+        - "§a  击杀监守者: §e1只"
+        - ""
+        - "§a属性加成:"
+        - "§a  攻击力 +6"
+        - "§a  生命值 +15"
+        - "§a  防御力 +3"
+        - "§a  幸运值 +3"
+        - ""
+        - "§b自定义属性:"
+        - "§b  攻击力 +40"
+        - "§b  生命力 +200"
+        - "§b  防御力 +25"
+        - "§b  暴击率 +10%"
+        - "§b  暴击伤害 +20%"
+        - ""
+        - "§e点击切换称号"
+    attributes:
+      GENERIC_ATTACK_DAMAGE: 6.0
+      GENERIC_MAX_HEALTH: 15.0
+      GENERIC_ARMOR: 3.0
+      GENERIC_LUCK: 3.0
+    saga-attributes:
+      攻击力: 40
+      生命力: 200
+      防御力: 25
+      暴击率: 10
+      暴击伤害: 20
+    unlock-conditions:
+      auto-unlock: false
+      ender-dragons-killed: 5
+      withers-killed: 10
+      elder-guardians-killed: 3
+      wardens-killed: 1
+
+  # ==================== 传奇系列 ====================
+
+  # 终极冒险家称号 - 复合条件
+  ultimate_adventurer:
+    display-name: "§6§l终极冒险家"
+    item:
+      material: "TOTEM_OF_UNDYING"
+      name: "§6§l终极冒险家"
+      lore:
+        - "§6§l完成所有冒险的传奇人物"
+        - "§6§l世界见证了你的伟大"
+        - ""
+        - "§a解锁条件:"
+        - "§a  总移动距离: §e100000米"
+        - "§a  击杀怪物: §e1000只"
+        - "§a  破坏方块: §e50000个"
+        - "§a  挖掘钻石矿: §e200个"
+        - "§a  击杀末影龙: §e1条"
+        - "§a  击杀凋零: §e3只"
+        - "§a  进入下界"
+        - "§a  进入末地"
+        - ""
+        - "§a属性加成:"
+        - "§a  攻击力 +5"
+        - "§a  生命值 +12"
+        - "§a  防御力 +3"
+        - "§a  移动速度 +0.08"
+        - "§a  幸运值 +4"
+        - ""
+        - "§b自定义属性:"
+        - "§b  攻击力 +35"
+        - "§b  生命力 +180"
+        - "§b  防御力 +20"
+        - "§b  移动速度 +0.3"
+        - "§b  幸运值 +20"
+        - "§b  暴击率 +8%"
+        - ""
+        - "§e点击切换称号"
+    attributes:
+      GENERIC_ATTACK_DAMAGE: 5.0
+      GENERIC_MAX_HEALTH: 12.0
+      GENERIC_ARMOR: 3.0
+      GENERIC_MOVEMENT_SPEED: 0.08
+      GENERIC_LUCK: 4.0
+    saga-attributes:
+      攻击力: 35
+      生命力: 180
+      防御力: 20
+      移动速度: 0.3
+      幸运值: 20
+      暴击率: 8
+    unlock-conditions:
+      auto-unlock: false
+      distance-traveled: 100000.0
+      kill-mobs: 1000
+      blocks-broken: 50000
+      diamonds-mined: 200
+      ender-dragons-killed: 1
+      withers-killed: 3
+      special-event: "enter-nether"
+      special-event: "enter-end"
+
+  # 传奇称号 - 管理员专用
   legend:
     display-name: "§6§l传奇"
     item:
       material: "NETHERITE_SWORD"
-      name: "§6§l传奇称号"
+      name: "§6§l传奇"
       lore:
         - "§6§l传说中的存在"
         - "§6§l只有最强者才能获得"
         - ""
-        - "§a原生属性:"
-        - "§a  攻击力 +4"
-        - "§a  生命值 +10"
-        - "§a  防御力 +2"
-        - "§a  移动速度 +0.03"
+        - "§c§l管理员专用称号"
+        - ""
+        - "§a属性加成:"
+        - "§a  攻击力 +8"
+        - "§a  生命值 +20"
+        - "§a  防御力 +5"
+        - "§a  移动速度 +0.1"
+        - "§a  幸运值 +5"
         - ""
         - "§b自定义属性:"
         - "§b  攻击力 +50"
-        - "§b  生命力 +200"
-        - "§b  防御力 +30"
-        - "§b  暴击率 +10%"
-        - "§b  暴击伤害 +25%"
+        - "§b  生命力 +250"
+        - "§b  防御力 +35"
+        - "§b  移动速度 +0.5"
+        - "§b  幸运值 +30"
+        - "§b  暴击率 +15%"
+        - "§b  暴击伤害 +30%"
         - ""
         - "§c§l稀有度: 传说级"
         - ""
         - "§e点击切换称号"
-    # 原生Minecraft属性
     attributes:
-      GENERIC_ATTACK_DAMAGE: 4.0
-      GENERIC_MAX_HEALTH: 10.0
-      GENERIC_ARMOR: 2.0
-      GENERIC_MOVEMENT_SPEED: 0.03
-    # SagaLoreStats属性
+      GENERIC_ATTACK_DAMAGE: 8.0
+      GENERIC_MAX_HEALTH: 20.0
+      GENERIC_ARMOR: 5.0
+      GENERIC_MOVEMENT_SPEED: 0.1
+      GENERIC_LUCK: 5.0
     saga-attributes:
       攻击力: 50
-      生命力: 200
-      防御力: 30
-      暴击率: 10
-      暴击伤害: 25
+      生命力: 250
+      防御力: 35
+      移动速度: 0.5
+      幸运值: 30
+      暴击率: 15
+      暴击伤害: 30
     unlock-conditions:
       auto-unlock: false
-      # 需要管理员手动给予
       admin-only: true
