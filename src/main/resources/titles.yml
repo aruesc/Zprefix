@@ -8,6 +8,8 @@ titles:
   # 新手称号 - 自动解锁
   newbie:
     display-name: "§7新手"
+    sort-order: 1
+    hidden: false
     item:
       material: "WOODEN_SWORD"
       name: "§7新手"
@@ -16,9 +18,6 @@ titles:
         - "§7每个人的起点"
         - ""
         - "§7属性加成: §8无"
-        - ""
-        - "§e点击切换称号"
-        - "§8使用 /title info 新手 查看详细信息"
     attributes: {}
     saga-attributes: {}
     unlock-conditions:
@@ -28,6 +27,8 @@ titles:
   # 初学者称号 - 游戏1小时
   beginner:
     display-name: "§8初学者"
+    sort-order: 2
+    hidden: false
     item:
       material: "STONE_SWORD"
       name: "§8初学者"
@@ -37,15 +38,39 @@ titles:
         - ""
         - "§a属性加成:"
         - "§a  生命值 +2"
-        - ""
-        - "§e点击切换称号"
-        - "§8使用 /title info 初学者 查看详细信息"
     attributes:
       GENERIC_MAX_HEALTH: 2.0
     saga-attributes: {}
     unlock-conditions:
       auto-unlock: false
       play-time: 1.0
+
+  # 富豪称号 - 可购买示例
+  wealthy:
+    display-name: "§6富豪"
+    sort-order: 50
+    hidden: false
+    item:
+      material: "GOLD_INGOT"
+      name: "§6富豪"
+      lore:
+        - "§6拥有财富的象征"
+        - "§6金钱的力量"
+        - ""
+        - "§a属性加成:"
+        - "§a  幸运值 +2"
+        - ""
+        - "§b自定义属性:"
+        - "§b  幸运值 +10"
+    attributes:
+      GENERIC_LUCK: 2.0
+    saga-attributes:
+      幸运值: 10
+    unlock-conditions:
+      auto-unlock: false
+    purchase:
+      money: 10000.0
+      points: 500
 
   # 冒险者称号 - 行走1公里 + 跳跃100次
   adventurer:
@@ -60,9 +85,6 @@ titles:
         - "§a属性加成:"
         - "§a  生命值 +2"
         - "§a  移动速度 +0.01"
-        - ""
-        - "§e点击切换称号"
-        - "§8使用 /title info 冒险者 查看详细信息"
     attributes:
       GENERIC_MAX_HEALTH: 2.0
       GENERIC_MOVEMENT_SPEED: 0.01
@@ -91,9 +113,6 @@ titles:
         - "§b自定义属性:"
         - "§b  攻击力 +5"
         - "§b  生命力 +25"
-        - ""
-        - "§e点击切换称号"
-        - "§8使用 /title info 战士 查看详细信息"
     attributes:
       GENERIC_ATTACK_DAMAGE: 1.0
       GENERIC_MAX_HEALTH: 2.0
@@ -121,9 +140,6 @@ titles:
         - "§b自定义属性:"
         - "§b  攻击力 +10"
         - "§b  生命力 +50"
-        - ""
-        - "§e点击切换称号"
-        - "§8使用 /title info brave 查看详细信息"
     attributes:
       GENERIC_ATTACK_DAMAGE: 2.0
       GENERIC_MAX_HEALTH: 4.0
@@ -154,9 +170,6 @@ titles:
         - "§b  攻击力 +25"
         - "§b  生命力 +100"
         - "§b  暴击率 +5%"
-        - ""
-        - "§e点击切换称号"
-        - "§8使用 /title info warlord 查看详细信息"
     attributes:
       GENERIC_ATTACK_DAMAGE: 4.0
       GENERIC_MAX_HEALTH: 8.0
@@ -182,9 +195,6 @@ titles:
         - "§9坚韧不拔的守护者"
         - "§9用身躯保护同伴"
         - ""
-        - "§a解锁条件:"
-        - "§a  受到伤害: §e1000点"
-        - ""
         - "§a属性加成:"
         - "§a  防御力 +2"
         - "§a  生命值 +6"
@@ -192,8 +202,6 @@ titles:
         - "§b自定义属性:"
         - "§b  防御力 +10"
         - "§b  生命力 +60"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_ARMOR: 2.0
       GENERIC_MAX_HEALTH: 6.0
@@ -214,10 +222,6 @@ titles:
         - "§1无法击破的坚固盾牌"
         - "§1经历无数战斗的老兵"
         - ""
-        - "§a解锁条件:"
-        - "§a  受到伤害: §e2000点"
-        - "§a  死亡次数: §e5次"
-        - ""
         - "§a属性加成:"
         - "§a  防御力 +4"
         - "§a  生命值 +10"
@@ -227,8 +231,6 @@ titles:
         - "§b  防御力 +20"
         - "§b  生命力 +120"
         - "§b  格挡率 +8%"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_ARMOR: 4.0
       GENERIC_MAX_HEALTH: 10.0
@@ -254,16 +256,11 @@ titles:
         - "§3热爱旅行的探索者"
         - "§3足迹遍布大地"
         - ""
-        - "§a解锁条件:"
-        - "§a  行走距离: §e5000米"
-        - ""
         - "§a属性加成:"
         - "§a  移动速度 +0.02"
         - ""
         - "§b自定义属性:"
         - "§b  移动速度 +0.1"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_MOVEMENT_SPEED: 0.02
     saga-attributes:
@@ -282,10 +279,6 @@ titles:
         - "§6勇敢的维度探险家"
         - "§6敢于踏足未知领域"
         - ""
-        - "§a解锁条件:"
-        - "§a  行走距离: §e20000米"
-        - "§a  进入下界"
-        - ""
         - "§a属性加成:"
         - "§a  移动速度 +0.05"
         - "§a  幸运值 +1"
@@ -293,8 +286,6 @@ titles:
         - "§b自定义属性:"
         - "§b  移动速度 +0.2"
         - "§b  幸运值 +5"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_MOVEMENT_SPEED: 0.05
       GENERIC_LUCK: 1.0
@@ -316,11 +307,6 @@ titles:
         - "§d穿越所有维度的行者"
         - "§d世界的每个角落都有足迹"
         - ""
-        - "§a解锁条件:"
-        - "§a  总移动距离: §e100000米"
-        - "§a  进入下界"
-        - "§a  进入末地"
-        - ""
         - "§a属性加成:"
         - "§a  移动速度 +0.1"
         - "§a  幸运值 +2"
@@ -330,8 +316,6 @@ titles:
         - "§b  移动速度 +0.5"
         - "§b  幸运值 +10"
         - "§b  生命力 +80"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_MOVEMENT_SPEED: 0.1
       GENERIC_LUCK: 2.0
@@ -358,16 +342,11 @@ titles:
         - "§b技艺精湛的渔夫"
         - "§b总能钓到好鱼"
         - ""
-        - "§a解锁条件:"
-        - "§a  钓鱼次数: §e100次"
-        - ""
         - "§a属性加成:"
         - "§a  幸运值 +1"
         - ""
         - "§b自定义属性:"
         - "§b  幸运值 +5"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_LUCK: 1.0
     saga-attributes:
@@ -386,9 +365,6 @@ titles:
         - "§a经营牧场的专家"
         - "§a动物们的好朋友"
         - ""
-        - "§a解锁条件:"
-        - "§a  繁殖动物: §e50只"
-        - ""
         - "§a属性加成:"
         - "§a  幸运值 +1"
         - "§a  生命值 +4"
@@ -396,8 +372,6 @@ titles:
         - "§b自定义属性:"
         - "§b  幸运值 +5"
         - "§b  生命力 +40"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_LUCK: 1.0
       GENERIC_MAX_HEALTH: 4.0
@@ -418,11 +392,6 @@ titles:
         - "§e精通各种生活技能"
         - "§e享受宁静生活的智者"
         - ""
-        - "§a解锁条件:"
-        - "§a  钓鱼次数: §e500次"
-        - "§a  繁殖动物: §e200只"
-        - "§a  游戏时间: §e100小时"
-        - ""
         - "§a属性加成:"
         - "§a  幸运值 +3"
         - "§a  生命值 +8"
@@ -430,8 +399,6 @@ titles:
         - "§b自定义属性:"
         - "§b  幸运值 +15"
         - "§b  生命力 +100"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_LUCK: 3.0
       GENERIC_MAX_HEALTH: 8.0
@@ -456,16 +423,11 @@ titles:
         - "§8勤劳的煤矿工人"
         - "§8为世界提供燃料"
         - ""
-        - "§a解锁条件:"
-        - "§a  挖掘煤矿: §e500个"
-        - ""
         - "§a属性加成:"
         - "§a  幸运值 +1"
         - ""
         - "§b自定义属性:"
         - "§b  挖掘速度 +10%"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_LUCK: 1.0
     saga-attributes:
@@ -484,10 +446,6 @@ titles:
         - "§7经验丰富的铁矿工"
         - "§7掌握了铁矿的秘密"
         - ""
-        - "§a解锁条件:"
-        - "§a  挖掘铁矿: §e200个"
-        - "§a  挖掘煤矿: §e1000个"
-        - ""
         - "§a属性加成:"
         - "§a  幸运值 +1"
         - "§a  生命值 +2"
@@ -495,8 +453,6 @@ titles:
         - "§b自定义属性:"
         - "§b  挖掘速度 +15%"
         - "§b  生命力 +20"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_LUCK: 1.0
       GENERIC_MAX_HEALTH: 2.0
@@ -518,10 +474,6 @@ titles:
         - "§b发现钻石的幸运儿"
         - "§b掌握了钻石的秘密"
         - ""
-        - "§a解锁条件:"
-        - "§a  挖掘钻石矿: §e100个"
-        - "§a  挖掘铁矿: §e500个"
-        - ""
         - "§a属性加成:"
         - "§a  幸运值 +2"
         - "§a  生命值 +4"
@@ -529,8 +481,6 @@ titles:
         - "§b自定义属性:"
         - "§b  挖掘速度 +25%"
         - "§b  幸运值 +10"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_LUCK: 2.0
       GENERIC_MAX_HEALTH: 4.0
@@ -552,12 +502,6 @@ titles:
         - "§6§l传说中的挖矿大师"
         - "§6§l无人能及的挖矿技艺"
         - ""
-        - "§a解锁条件:"
-        - "§a  挖掘钻石矿: §e500个"
-        - "§a  挖掘绿宝石矿: §e100个"
-        - "§a  挖掘远古残骸: §e50个"
-        - "§a  破坏方块: §e50000个"
-        - ""
         - "§a属性加成:"
         - "§a  幸运值 +5"
         - "§a  生命值 +10"
@@ -567,8 +511,6 @@ titles:
         - "§b  挖掘速度 +50%"
         - "§b  幸运值 +25"
         - "§b  生命力 +120"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_LUCK: 5.0
       GENERIC_MAX_HEALTH: 10.0
@@ -596,9 +538,6 @@ titles:
         - "§2专门猎杀僵尸的猎人"
         - "§2僵尸们的噩梦"
         - ""
-        - "§a解锁条件:"
-        - "§a  击杀僵尸: §e500只"
-        - ""
         - "§a属性加成:"
         - "§a  攻击力 +1"
         - "§a  生命值 +2"
@@ -606,8 +545,6 @@ titles:
         - "§b自定义属性:"
         - "§b  攻击力 +8"
         - "§b  生命力 +30"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_ATTACK_DAMAGE: 1.0
       GENERIC_MAX_HEALTH: 2.0
@@ -628,9 +565,6 @@ titles:
         - "§f精准射击的骷髅猎人"
         - "§f箭术无人能敌"
         - ""
-        - "§a解锁条件:"
-        - "§a  击杀骷髅: §e300只"
-        - ""
         - "§a属性加成:"
         - "§a  攻击力 +1"
         - "§a  攻击速度 +0.05"
@@ -638,8 +572,6 @@ titles:
         - "§b自定义属性:"
         - "§b  攻击力 +8"
         - "§b  暴击率 +3%"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_ATTACK_DAMAGE: 1.0
       GENERIC_ATTACK_SPEED: 0.05
@@ -660,9 +592,6 @@ titles:
         - "§a无畏爆炸的勇士"
         - "§a苦力怕的克星"
         - ""
-        - "§a解锁条件:"
-        - "§a  击杀苦力怕: §e200只"
-        - ""
         - "§a属性加成:"
         - "§a  攻击力 +1"
         - "§a  击退抗性 +0.1"
@@ -670,8 +599,6 @@ titles:
         - "§b自定义属性:"
         - "§b  攻击力 +8"
         - "§b  爆炸抗性 +20%"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_ATTACK_DAMAGE: 1.0
       GENERIC_KNOCKBACK_RESISTANCE: 0.1
@@ -694,9 +621,6 @@ titles:
         - "§5击败末影龙的英雄"
         - "§5传说中的屠龙勇士"
         - ""
-        - "§a解锁条件:"
-        - "§a  击杀末影龙: §e1条"
-        - ""
         - "§a属性加成:"
         - "§a  攻击力 +3"
         - "§a  生命值 +6"
@@ -706,8 +630,6 @@ titles:
         - "§b  攻击力 +20"
         - "§b  生命力 +80"
         - "§b  暴击率 +5%"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_ATTACK_DAMAGE: 3.0
       GENERIC_MAX_HEALTH: 6.0
@@ -730,9 +652,6 @@ titles:
         - "§8击败凋零的勇士"
         - "§8不惧死亡的战士"
         - ""
-        - "§a解锁条件:"
-        - "§a  击杀凋零: §e3只"
-        - ""
         - "§a属性加成:"
         - "§a  攻击力 +3"
         - "§a  防御力 +2"
@@ -742,8 +661,6 @@ titles:
         - "§b  攻击力 +20"
         - "§b  防御力 +15"
         - "§b  生命力 +80"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_ATTACK_DAMAGE: 3.0
       GENERIC_ARMOR: 2.0
@@ -766,12 +683,6 @@ titles:
         - "§d§l击败所有传说生物的猎人"
         - "§d§l无人能敌的Boss杀手"
         - ""
-        - "§a解锁条件:"
-        - "§a  击杀末影龙: §e5条"
-        - "§a  击杀凋零: §e10只"
-        - "§a  击杀远古守卫者: §e3只"
-        - "§a  击杀监守者: §e1只"
-        - ""
         - "§a属性加成:"
         - "§a  攻击力 +6"
         - "§a  生命值 +15"
@@ -784,8 +695,6 @@ titles:
         - "§b  防御力 +25"
         - "§b  暴击率 +10%"
         - "§b  暴击伤害 +20%"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_ATTACK_DAMAGE: 6.0
       GENERIC_MAX_HEALTH: 15.0
@@ -816,16 +725,6 @@ titles:
         - "§6§l完成所有冒险的传奇人物"
         - "§6§l世界见证了你的伟大"
         - ""
-        - "§a解锁条件:"
-        - "§a  总移动距离: §e100000米"
-        - "§a  击杀怪物: §e1000只"
-        - "§a  破坏方块: §e50000个"
-        - "§a  挖掘钻石矿: §e200个"
-        - "§a  击杀末影龙: §e1条"
-        - "§a  击杀凋零: §e3只"
-        - "§a  进入下界"
-        - "§a  进入末地"
-        - ""
         - "§a属性加成:"
         - "§a  攻击力 +5"
         - "§a  生命值 +12"
@@ -840,8 +739,6 @@ titles:
         - "§b  移动速度 +0.3"
         - "§b  幸运值 +20"
         - "§b  暴击率 +8%"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_ATTACK_DAMAGE: 5.0
       GENERIC_MAX_HEALTH: 12.0
@@ -895,8 +792,6 @@ titles:
         - "§b  暴击伤害 +30%"
         - ""
         - "§c§l稀有度: 传说级"
-        - ""
-        - "§e点击切换称号"
     attributes:
       GENERIC_ATTACK_DAMAGE: 8.0
       GENERIC_MAX_HEALTH: 20.0

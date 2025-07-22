@@ -3,6 +3,8 @@ package com.github.chengge.zprefix.manager;
 import com.github.chengge.zprefix.ZPrefix;
 import com.github.chengge.zprefix.data.PlayerTitleData;
 import com.github.chengge.zprefix.data.TitleInfo;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -314,28 +316,172 @@ public class TitleManager {
     
     /**
      * 玩家加入时的处理
+     * 确保玩家属性状态正确初始化
      *
      * @param player 玩家
      */
     public void onPlayerJoin(Player player) {
-        PlayerTitleData playerData = getPlayerData(player);
+        try {
+            PlayerTitleData playerData = getPlayerData(player);
 
-        // 首先强制清理所有可能的遗留属性修改器
+            // 第一步：强制重置玩家属性为默认状态
+            resetPlayerAttributesToDefault(player);
+
+            // 第二步：检查是否需要给予默认称号
+            if (!playerData.hasAnyUnlockedTitle()) {
+                giveAutoUnlockTitles(player);
+                // 重新获取数据，因为可能有新的称号被解锁
+                playerData = getPlayerData(player);
+            }
+
+            // 第三步：按正确顺序应用当前称号的属性加成
+            String currentTitle = playerData.getCurrentTitle();
+            if (currentTitle != null) {
+                TitleInfo titleInfo = configManager.getTitleInfo(currentTitle);
+                if (titleInfo != null) {
+                    // 延迟应用属性，确保玩家完全加载
+                    plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                        applyTitleAttributesWithOrder(player, titleInfo);
+
+                        // 再次延迟确保生命值正确（不强制满血，保持原有血量）
+                        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                            ensurePlayerHealthIsCorrect(player);
+                        }, 3L); // 再延迟0.15秒
+                    }, 5L); // 延迟0.25秒
+                } else {
+                    // 称号配置不存在，清除无效的当前称号
+                    playerData.removeCurrentTitle();
+                    plugin.getLogger().warning("玩家 " + player.getName() + " 的当前称号 " + currentTitle + " 不存在，已清除");
+                }
+            }
+
+            // 只在调试模式下显示详细信息
+            if (plugin.getConfigManager().getConfigValue("debug", false)) {
+                plugin.getLogger().info("玩家 " + player.getName() + " 加入处理完成，当前称号: " +
+                    (currentTitle != null ? currentTitle : "无"));
+            }
+
+        } catch (Exception e) {
+            plugin.getLogger().warning("处理玩家 " + player.getName() + " 加入时出错: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 重置玩家属性为默认状态
+     * 移除所有可能的属性修改器，确保干净的起始状态
+     *
+     * @param player 玩家
+     */
+    private void resetPlayerAttributesToDefault(Player player) {
+        // 强制清理所有可能的遗留属性修改器
         buffManager.forceCleanupPlayerAttributes(player);
 
-        // 检查是否需要给予默认称号
-        if (!playerData.hasAnyUnlockedTitle()) {
-            giveAutoUnlockTitles(player);
-        }
-
-        // 应用当前称号的属性加成
-        String currentTitle = playerData.getCurrentTitle();
-        if (currentTitle != null) {
-            TitleInfo titleInfo = configManager.getTitleInfo(currentTitle);
-            if (titleInfo != null) {
-                buffManager.applyTitleBuffs(player, titleInfo);
+        // 确保SagaLoreStats相关的属性也被清理
+        if (plugin.getSagaIntegration() != null) {
+            try {
+                plugin.getSagaIntegration().cleanupPlayerData(player.getUniqueId());
+            } catch (Exception e) {
+                // SagaLoreStats可能未启动，忽略错误
+                plugin.getLogger().info("SagaLoreStats清理失败（插件可能未启动）: " + e.getMessage());
             }
         }
+
+        // 只在调试模式下显示信息
+        if (plugin.getConfigManager().getConfigValue("debug", false)) {
+            plugin.getLogger().info("已重置玩家 " + player.getName() + " 的属性为默认状态");
+        }
+    }
+
+    /**
+     * 按正确顺序应用称号属性
+     * 先应用原版属性，再应用其他插件属性
+     *
+     * @param player 玩家
+     * @param titleInfo 称号信息
+     */
+    private void applyTitleAttributesWithOrder(Player player, TitleInfo titleInfo) {
+        try {
+            // 应用称号属性（BuffManager会按正确顺序处理）
+            buffManager.applyTitleBuffs(player, titleInfo);
+
+            // 只在调试模式下显示详细信息
+            if (plugin.getConfigManager().getConfigValue("debug", false)) {
+                plugin.getLogger().info("为玩家 " + player.getName() + " 应用称号 " + titleInfo.getDisplayName() + " 的属性");
+            }
+
+        } catch (Exception e) {
+            plugin.getLogger().warning("为玩家 " + player.getName() + " 应用称号属性时出错: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 确保玩家生命值正确
+     * 在属性应用完成后调用，确保玩家有正确的生命值状态
+     * 保持玩家下线时的血量比例，而不是强制满血
+     *
+     * @param player 玩家
+     */
+    private void ensurePlayerHealthIsCorrect(Player player) {
+        try {
+            // 获取玩家的最大生命值属性
+            Attribute healthAttribute = getMaxHealthAttribute();
+
+            if (healthAttribute != null) {
+                AttributeInstance healthInstance = player.getAttribute(healthAttribute);
+                if (healthInstance != null) {
+                    double newMaxHealth = healthInstance.getValue();
+                    double currentHealth = player.getHealth();
+
+                    // 只有当当前生命值超过新的最大生命值时才调整
+                    // 这种情况通常发生在移除了增加生命值的称号时
+                    if (currentHealth > newMaxHealth) {
+                        player.setHealth(newMaxHealth);
+
+                        // 只在调试模式下显示详细信息
+                        if (plugin.getConfigManager().getConfigValue("debug", false)) {
+                            plugin.getLogger().info("为玩家 " + player.getName() + " 限制生命值: " +
+                                                  currentHealth + " -> " + newMaxHealth + " (超过最大值)");
+                        }
+                    } else {
+                        // 正常情况：保持玩家当前的血量，不做任何调整
+                        if (plugin.getConfigManager().getConfigValue("debug", false)) {
+                            plugin.getLogger().info("玩家 " + player.getName() + " 生命值正常: " +
+                                                  currentHealth + "/" + newMaxHealth + " (保持原有血量)");
+                        }
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            // 生命值检查失败不应该影响其他功能
+            plugin.getLogger().warning("为玩家 " + player.getName() + " 检查生命值时出错: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取最大生命值属性（兼容不同版本）
+     *
+     * @return 最大生命值属性，如果找不到则返回null
+     */
+    private Attribute getMaxHealthAttribute() {
+        // 尝试获取最大生命值属性（兼容不同版本）
+        try {
+            return Attribute.valueOf("GENERIC_MAX_HEALTH");
+        } catch (Exception e) {
+            try {
+                return Attribute.valueOf("MAX_HEALTH");
+            } catch (Exception e2) {
+                // 如果都获取不到，尝试通过AttributeAdapter
+                Set<Attribute> availableAttributes = com.github.chengge.zprefix.util.AttributeAdapter.getAllAvailableAttributes();
+                for (Attribute attr : availableAttributes) {
+                    String name = com.github.chengge.zprefix.util.AttributeAdapter.getAttributeName(attr);
+                    if (name != null && name.contains("MAX_HEALTH")) {
+                        return attr;
+                    }
+                }
+            }
+        }
+        return null;
     }
     
     /**

@@ -33,6 +33,7 @@ public class TitleGUI {
     
     // 按钮槽位
     private static final int PREV_PAGE_SLOT = 45;
+    private static final int UNLOCKED_TITLES_SLOT = 46;
     private static final int CLOSE_SLOT = 47;
     private static final int PAGE_INFO_SLOT = 49;
     private static final int REFRESH_SLOT = 51;
@@ -161,6 +162,7 @@ public class TitleGUI {
         gui.setItem(CLOSE_SLOT, createCloseButton());
         gui.setItem(PAGE_INFO_SLOT, createPageInfoButton(currentPage, totalPages, totalTitles, unlockedTitles));
         gui.setItem(REFRESH_SLOT, createRefreshButton());
+        gui.setItem(UNLOCKED_TITLES_SLOT, createUnlockedTitlesButton());
     }
     
     /**
@@ -249,6 +251,14 @@ public class TitleGUI {
     }
 
     /**
+     * 创建未解锁称号按钮
+     */
+    private ItemStack createUnlockedTitlesButton() {
+        return createConfigurableButton("unlocked-titles", "§c§l未解锁称号",
+            List.of("§7查看所有未解锁的称号", "§7包含解锁条件和购买选项", "", "§e点击打开"), 0, 0, 0, 0);
+    }
+
+    /**
      * 创建禁用按钮
      */
     private ItemStack createDisabledButton(String name, String reason) {
@@ -296,6 +306,20 @@ public class TitleGUI {
         }
         
         return item;
+    }
+
+    /**
+     * 创建配置化按钮物品
+     */
+    private ItemStack createConfigurableButton(String buttonType, String fallbackName, List<String> fallbackLore,
+                                              int currentPage, int totalPages, int totalTitles, int unlockedTitles) {
+        String configPath = "gui.buttons." + buttonType;
+
+        String materialName = configManager.getConfigValue(configPath + ".material", "STONE");
+        String name = configManager.getConfigValue(configPath + ".name", fallbackName);
+        List<String> lore = configManager.getConfigValue(configPath + ".lore", fallbackLore);
+
+        return createButton(materialName, name, lore, currentPage, totalPages, totalTitles, unlockedTitles);
     }
 
     /**
@@ -387,6 +411,11 @@ public class TitleGUI {
 
             case PAGE_INFO_SLOT:
                 // 页面信息按钮，不做任何操作
+                return true;
+
+            case UNLOCKED_TITLES_SLOT:
+                // 打开未解锁称号界面
+                plugin.getUnlockedTitleGUI().openGUI(player);
                 return true;
 
             default:

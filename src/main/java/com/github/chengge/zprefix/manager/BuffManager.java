@@ -40,6 +40,7 @@ public class BuffManager {
     
     /**
      * 应用称号的属性加成
+     * 确保正确的应用顺序：先原版属性，后其他插件属性
      *
      * @param player 玩家
      * @param titleInfo 称号信息
@@ -49,14 +50,23 @@ public class BuffManager {
             return;
         }
 
-        // 先移除现有的属性修改器
+        // 先完全清理所有现有的属性修改器
         removeTitleBuffs(player);
 
-        // 应用原生属性加成
+        // 确保玩家属性处于干净状态
+        ensureCleanAttributeState(player);
+
+        // 按正确顺序应用属性：
+        // 1. 首先应用原版属性加成（基础属性）
         applyNativeAttributes(player, titleInfo);
 
-        // 应用SagaLoreStats属性加成
+        // 2. 然后应用SagaLoreStats属性加成（扩展属性）
         applySagaLoreStatsAttributes(player, titleInfo);
+
+        // 只在调试模式下显示应用信息
+        if (plugin.getConfigManager().getConfigValue("debug", false)) {
+            plugin.getLogger().info("为玩家 " + player.getName() + " 应用称号 " + titleInfo.getDisplayName() + " 的属性加成");
+        }
     }
 
     /**
@@ -104,6 +114,9 @@ public class BuffManager {
                     attributeInstance.addModifier(modifier);
                     modifiers.put(attribute, modifier);
 
+                    // 特殊处理最大生命值：调整当前生命值
+                    handleHealthAttributeChange(player, attribute, value);
+
                     // 只在调试模式下显示详细信息
                     if (plugin.getConfigManager().getConfigValue("debug", false)) {
                         plugin.getLogger().info("为玩家 " + player.getName() + " 应用属性加成: " +
@@ -123,6 +136,124 @@ public class BuffManager {
     }
 
     /**
+     * 处理生命值属性变化
+     * 当最大生命值改变时，智能调整当前生命值
+     * 保持血量比例，而不是简单的数值增减
+     *
+     * @param player 玩家
+     * @param attribute 属性类型
+     * @param value 属性值变化
+     */
+    private void handleHealthAttributeChange(Player player, Attribute attribute, double value) {
+        try {
+            // 检查是否是最大生命值属性
+            String attributeName = com.github.chengge.zprefix.util.AttributeAdapter.getAttributeName(attribute);
+            if (attributeName != null &&
+                (attributeName.contains("MAX_HEALTH") || attributeName.contains("HEALTH"))) {
+
+                // 获取当前生命值和新的最大生命值
+                double currentHealth = player.getHealth();
+                double newMaxHealth = player.getAttribute(attribute).getValue();
+
+                // 计算旧的最大生命值
+                double oldMaxHealth = newMaxHealth - value;
+
+                if (value > 0) {
+                    // 增加了最大生命值的情况
+                    if (oldMaxHealth > 0) {
+                        // 计算原来的血量比例
+                        double healthRatio = currentHealth / oldMaxHealth;
+
+                        // 如果原来是满血状态（比例 >= 0.99），则保持满血
+                        if (healthRatio >= 0.99) {
+                            player.setHealth(newMaxHealth);
+
+                            if (plugin.getConfigManager().getConfigValue("debug", false)) {
+                                plugin.getLogger().info("为玩家 " + player.getName() + " 保持满血状态: " +
+                                                      currentHealth + " -> " + newMaxHealth + " (原本满血)");
+                            }
+                        } else {
+                            // 如果原来不是满血，按比例增加生命值
+                            double newHealth = Math.min(currentHealth + value, newMaxHealth);
+                            player.setHealth(newHealth);
+
+                            if (plugin.getConfigManager().getConfigValue("debug", false)) {
+                                plugin.getLogger().info("为玩家 " + player.getName() + " 按比例增加生命值: " +
+                                                      currentHealth + " -> " + newHealth + " (比例: " + String.format("%.1f%%", healthRatio * 100) + ")");
+                            }
+                        }
+                    }
+                } else if (value < 0) {
+                    // 减少了最大生命值的情况
+                    // 确保当前生命值不超过新的最大值
+                    if (currentHealth > newMaxHealth) {
+                        player.setHealth(newMaxHealth);
+
+                        if (plugin.getConfigManager().getConfigValue("debug", false)) {
+                            plugin.getLogger().info("为玩家 " + player.getName() + " 限制生命值: " +
+                                                  currentHealth + " -> " + newMaxHealth + " (超过新最大值)");
+                        }
+                    }
+                    // 如果没有超过新最大值，保持原有生命值不变
+                }
+            }
+        } catch (Exception e) {
+            // 生命值调整失败不应该影响属性应用
+            plugin.getLogger().warning("调整玩家 " + player.getName() + " 生命值时出错: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 确保玩家属性处于干净状态
+     * 移除所有可能的残留属性修改器
+     *
+     * @param player 玩家
+     */
+    private void ensureCleanAttributeState(Player player) {
+        if (player == null) {
+            return;
+        }
+
+        // 获取所有可用属性
+        Set<Attribute> availableAttributes = com.github.chengge.zprefix.util.AttributeAdapter.getAllAvailableAttributes();
+
+        int cleanedCount = 0;
+        for (Attribute attribute : availableAttributes) {
+            try {
+                AttributeInstance attributeInstance = player.getAttribute(attribute);
+                if (attributeInstance != null) {
+                    // 移除所有zPrefix相关的修改器
+                    List<AttributeModifier> toRemove = new ArrayList<>();
+                    for (AttributeModifier modifier : attributeInstance.getModifiers()) {
+                        if (modifier.getName() != null &&
+                            (modifier.getName().contains("zPrefix") ||
+                             modifier.getName().contains("SagaLoreStats") ||
+                             modifier.getName().contains("title"))) {
+                            toRemove.add(modifier);
+                        }
+                    }
+
+                    for (AttributeModifier modifier : toRemove) {
+                        try {
+                            attributeInstance.removeModifier(modifier);
+                            cleanedCount++;
+                        } catch (Exception e) {
+                            // 忽略移除错误
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // 忽略属性访问错误
+            }
+        }
+
+        // 只在有清理操作或调试模式时显示
+        if (cleanedCount > 0 || plugin.getConfigManager().getConfigValue("debug", false)) {
+            plugin.getLogger().info("为玩家 " + player.getName() + " 清理了 " + cleanedCount + " 个残留属性修改器");
+        }
+    }
+
+    /**
      * 应用SagaLoreStats属性加成
      *
      * @param player 玩家
@@ -136,6 +267,7 @@ public class BuffManager {
     
     /**
      * 移除玩家的称号属性加成
+     * 确保完全清理所有相关属性修改器
      *
      * @param player 玩家
      */
@@ -147,7 +279,10 @@ public class BuffManager {
         UUID playerId = player.getUniqueId();
         Map<Attribute, AttributeModifier> modifiers = playerModifiers.get(playerId);
 
-        // 如果有缓存的修改器，使用缓存数据移除
+        // 1. 首先移除SagaLoreStats属性（优先处理，避免残留）
+        removeSagaLoreStatsAttributes(player);
+
+        // 2. 然后移除原版属性修改器
         if (modifiers != null && !modifiers.isEmpty()) {
             for (Map.Entry<Attribute, AttributeModifier> entry : modifiers.entrySet()) {
                 Attribute attribute = entry.getKey();
@@ -156,10 +291,21 @@ public class BuffManager {
                 try {
                     AttributeInstance attributeInstance = player.getAttribute(attribute);
                     if (attributeInstance != null) {
+                        // 在移除修改器前记录属性值变化
+                        double oldValue = attributeInstance.getValue();
+
                         attributeInstance.removeModifier(modifier);
+
+                        // 移除后检查生命值是否需要调整
+                        double newValue = attributeInstance.getValue();
+                        double valueChange = newValue - oldValue;
+                        if (valueChange != 0) {
+                            handleHealthAttributeChange(player, attribute, valueChange);
+                        }
+
                         // 只在调试模式下显示移除信息
                         if (plugin.getConfigManager().getConfigValue("debug", false)) {
-                            plugin.getLogger().info("为玩家 " + player.getName() + " 移除属性加成: " + attribute.name());
+                            plugin.getLogger().info("为玩家 " + player.getName() + " 移除原版属性: " + attribute.name());
                         }
                     }
                 } catch (Exception e) {
@@ -172,12 +318,65 @@ public class BuffManager {
             removeModifiersByUUID(player);
         }
 
-        // 清除修改器引用
-        playerModifiers.remove(playerId);
+        // 3. 强制清理所有可能的残留修改器
+        forceCleanupAllTitleModifiers(player);
 
-        // 移除SagaLoreStats属性
-        if (sagaIntegration != null && sagaIntegration.isEnabled()) {
-            sagaIntegration.removeTitleAttributes(player);
+        // 4. 清除修改器引用
+        playerModifiers.remove(playerId);
+    }
+
+    /**
+     * 安全地移除SagaLoreStats属性
+     *
+     * @param player 玩家
+     */
+    private void removeSagaLoreStatsAttributes(Player player) {
+        try {
+            if (sagaIntegration != null) {
+                // 无论SagaLoreStats是否启用，都尝试清理
+                sagaIntegration.removeTitleAttributes(player);
+            }
+        } catch (Exception e) {
+            // SagaLoreStats插件可能有问题，记录警告但不影响原版属性清理
+            plugin.getLogger().warning("清理SagaLoreStats属性时出错（插件可能未启动）: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 强制清理所有称号相关的修改器
+     *
+     * @param player 玩家
+     */
+    private void forceCleanupAllTitleModifiers(Player player) {
+        Set<Attribute> availableAttributes = com.github.chengge.zprefix.util.AttributeAdapter.getAllAvailableAttributes();
+
+        for (Attribute attribute : availableAttributes) {
+            try {
+                AttributeInstance attributeInstance = player.getAttribute(attribute);
+                if (attributeInstance != null) {
+                    // 收集所有称号相关的修改器
+                    List<AttributeModifier> toRemove = new ArrayList<>();
+                    for (AttributeModifier modifier : attributeInstance.getModifiers()) {
+                        if (modifier.getName() != null &&
+                            (modifier.getName().contains("zPrefix") ||
+                             modifier.getName().contains("title") ||
+                             modifier.getName().contains("SagaLoreStats"))) {
+                            toRemove.add(modifier);
+                        }
+                    }
+
+                    // 移除收集到的修改器
+                    for (AttributeModifier modifier : toRemove) {
+                        try {
+                            attributeInstance.removeModifier(modifier);
+                        } catch (Exception e) {
+                            // 忽略移除错误
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // 忽略属性访问错误
+            }
         }
     }
 
@@ -232,34 +431,23 @@ public class BuffManager {
     }
 
     /**
-     * 通过名称移除可能存在的修改器
+     * 通过UUID移除可能存在的修改器
+     * 使用AttributeAdapter动态获取所有可用属性，避免硬编码
      *
      * @param player 玩家
      */
     private void removeModifiersByUUID(Player player) {
-        // 遍历所有可能的属性类型
-        Attribute[] attributes = {
-            Attribute.GENERIC_MAX_HEALTH,
-            Attribute.GENERIC_FOLLOW_RANGE,
-            Attribute.GENERIC_KNOCKBACK_RESISTANCE,
-            Attribute.GENERIC_MOVEMENT_SPEED,
-            Attribute.GENERIC_FLYING_SPEED,
-            Attribute.GENERIC_ATTACK_DAMAGE,
-            Attribute.GENERIC_ATTACK_KNOCKBACK,
-            Attribute.GENERIC_ATTACK_SPEED,
-            Attribute.GENERIC_ARMOR,
-            Attribute.GENERIC_ARMOR_TOUGHNESS,
-            Attribute.GENERIC_LUCK
-        };
+        // 使用AttributeAdapter动态获取所有可用属性
+        Set<Attribute> availableAttributes = com.github.chengge.zprefix.util.AttributeAdapter.getAllAvailableAttributes();
 
-        for (Attribute attribute : attributes) {
+        for (Attribute attribute : availableAttributes) {
             try {
                 AttributeInstance attributeInstance = player.getAttribute(attribute);
                 if (attributeInstance != null) {
                     forceRemoveZPrefixModifiers(attributeInstance);
                 }
             } catch (Exception e) {
-                // 忽略清理时的错误
+                // 忽略清理时的错误，某些属性可能不适用于玩家
             }
         }
     }
@@ -338,23 +526,11 @@ public class BuffManager {
             plugin.getLogger().info("正在为玩家 " + player.getName() + " 强制清理所有zPrefix属性修改器...");
         }
 
-        // 遍历所有可能的属性类型
-        Attribute[] attributes = {
-            Attribute.GENERIC_MAX_HEALTH,
-            Attribute.GENERIC_FOLLOW_RANGE,
-            Attribute.GENERIC_KNOCKBACK_RESISTANCE,
-            Attribute.GENERIC_MOVEMENT_SPEED,
-            Attribute.GENERIC_FLYING_SPEED,
-            Attribute.GENERIC_ATTACK_DAMAGE,
-            Attribute.GENERIC_ATTACK_KNOCKBACK,
-            Attribute.GENERIC_ATTACK_SPEED,
-            Attribute.GENERIC_ARMOR,
-            Attribute.GENERIC_ARMOR_TOUGHNESS,
-            Attribute.GENERIC_LUCK
-        };
+        // 使用AttributeAdapter动态获取所有可用属性，避免硬编码
+        Set<Attribute> availableAttributes = com.github.chengge.zprefix.util.AttributeAdapter.getAllAvailableAttributes();
 
         int removedCount = 0;
-        for (Attribute attribute : attributes) {
+        for (Attribute attribute : availableAttributes) {
             try {
                 AttributeInstance attributeInstance = player.getAttribute(attribute);
                 if (attributeInstance != null) {
@@ -413,42 +589,20 @@ public class BuffManager {
     
     /**
      * 获取属性的显示名称
-     * 
+     * 使用AttributeAdapter进行跨版本兼容
+     *
      * @param attribute 属性
      * @return 显示名称
      */
     public String getAttributeDisplayName(Attribute attribute) {
-        switch (attribute) {
-            case GENERIC_MAX_HEALTH:
-                return "生命值";
-            case GENERIC_FOLLOW_RANGE:
-                return "跟随范围";
-            case GENERIC_KNOCKBACK_RESISTANCE:
-                return "击退抗性";
-            case GENERIC_MOVEMENT_SPEED:
-                return "移动速度";
-            case GENERIC_FLYING_SPEED:
-                return "飞行速度";
-            case GENERIC_ATTACK_DAMAGE:
-                return "攻击力";
-            case GENERIC_ATTACK_KNOCKBACK:
-                return "攻击击退";
-            case GENERIC_ATTACK_SPEED:
-                return "攻击速度";
-            case GENERIC_ARMOR:
-                return "防御力";
-            case GENERIC_ARMOR_TOUGHNESS:
-                return "盔甲韧性";
-            case GENERIC_LUCK:
-                return "幸运值";
-            default:
-                return attribute.name();
-        }
+        // 使用AttributeAdapter获取显示名称，支持跨版本兼容
+        return com.github.chengge.zprefix.util.AttributeAdapter.getDisplayName(attribute);
     }
     
     /**
      * 格式化属性值显示
-     * 
+     * 使用AttributeAdapter进行跨版本兼容的格式化
+     *
      * @param attribute 属性
      * @param value 属性值
      * @return 格式化后的显示文本
@@ -456,18 +610,26 @@ public class BuffManager {
     public String formatAttributeValue(Attribute attribute, double value) {
         String displayName = getAttributeDisplayName(attribute);
         String sign = value > 0 ? "+" : "";
-        
-        // 根据属性类型决定显示格式
-        switch (attribute) {
-            case GENERIC_MOVEMENT_SPEED:
-            case GENERIC_FLYING_SPEED:
-            case GENERIC_KNOCKBACK_RESISTANCE:
+
+        // 使用属性名称进行智能格式化，避免硬编码枚举值
+        String attributeName = com.github.chengge.zprefix.util.AttributeAdapter.getAttributeName(attribute);
+        if (attributeName != null) {
+            attributeName = attributeName.toUpperCase();
+
+            // 根据属性名称特征决定显示格式
+            if (attributeName.contains("SPEED") ||
+                attributeName.contains("RESISTANCE") ||
+                attributeName.contains("KNOCKBACK")) {
+                // 速度、抗性类属性显示2位小数
                 return String.format("§a%s %s%.2f", displayName, sign, value);
-            case GENERIC_ATTACK_SPEED:
+            } else if (attributeName.contains("ATTACK_SPEED")) {
+                // 攻击速度显示1位小数
                 return String.format("§a%s %s%.1f", displayName, sign, value);
-            default:
-                return String.format("§a%s %s%.0f", displayName, sign, value);
+            }
         }
+
+        // 默认显示整数
+        return String.format("§a%s %s%.0f", displayName, sign, value);
     }
     
     /**

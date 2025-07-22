@@ -3,6 +3,8 @@ plugins {
     id("xyz.jpenilla.run-paper") version "2.3.1"
 }
 
+
+
 // ==================== 版本管理系统 ====================
 // 版本管理
 def versionFile = file('version.properties')
@@ -79,11 +81,16 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
+    // 升级到Paper 1.21.4以获得最新API和功能
+    // 需要Java 21+，使用G:\gui\jdk21
+    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     // 添加SagaLoreStats本地依赖
     compileOnly files('libs/SagaLoreStats.jar')
     // 添加PlaceholderAPI依赖
     compileOnly("me.clip:placeholderapi:2.11.5")
+    // 添加经济系统依赖
+    compileOnly files('libs/Vault.jar')
+    compileOnly files('libs/PlayerPoints.jar')
 }
 
 tasks {
@@ -95,7 +102,7 @@ tasks {
     }
 }
 
-def targetJavaVersion = 17
+def targetJavaVersion = 21
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion

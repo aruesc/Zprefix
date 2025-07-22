@@ -1,9 +1,10 @@
 package com.github.chengge.zprefix.integration;
 
-import com.saga.sagalorestats.api.SagaLoreStatsAPI;
 import com.github.chengge.zprefix.ZPrefix;
 import com.github.chengge.zprefix.data.TitleInfo;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.Bukkit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,24 +34,52 @@ public class SagaLoreStatsIntegration {
      */
     public void initialize() {
         try {
-            // 检查SagaLoreStats插件是否可用
-            if (SagaLoreStatsAPI.isAvailable()) {
-                plugin.getLogger().info("成功集成 SagaLoreStats 插件！");
+            // 检查SagaLoreStats插件是否已安装并启用
+            if (Bukkit.getPluginManager().getPlugin("SagaLoreStats") != null &&
+                Bukkit.getPluginManager().isPluginEnabled("SagaLoreStats")) {
+
+                // 尝试加载SagaLoreStats API类
+                try {
+                    Class<?> apiClass = Class.forName("com.saga.sagalorestats.api.SagaLoreStatsAPI");
+                    plugin.getLogger().info("成功集成 SagaLoreStats 插件！");
+
+                    // 在调试模式下显示可用的API方法
+                    if (plugin.getConfigManager().getConfigValue("debug", false)) {
+                        logAvailableMethods(apiClass);
+                    }
+                } catch (ClassNotFoundException e) {
+                    plugin.getLogger().warning("检测到 SagaLoreStats 插件，但API版本不兼容，将使用原生属性系统");
+                }
             } else {
                 plugin.getLogger().info("未检测到 SagaLoreStats 插件，将使用原生属性系统");
             }
         } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING, "初始化 SagaLoreStats 集成时出错", e);
+            plugin.getLogger().log(Level.WARNING, "初始化 SagaLoreStats 集成时出错，将使用原生属性系统", e);
         }
     }
     
     /**
      * 检查集成是否可用
-     * 
+     *
      * @return 是否可用
      */
     public boolean isEnabled() {
-        return SagaLoreStatsAPI.isAvailable();
+        try {
+            // 检查插件是否存在并启用
+            if (Bukkit.getPluginManager().getPlugin("SagaLoreStats") == null ||
+                !Bukkit.getPluginManager().isPluginEnabled("SagaLoreStats")) {
+                return false;
+            }
+
+            // 检查API类是否存在
+            Class.forName("com.saga.sagalorestats.api.SagaLoreStatsAPI");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "检查 SagaLoreStats 集成状态时出错", e);
+            return false;
+        }
     }
     
     /**
@@ -84,7 +113,7 @@ public class SagaLoreStatsIntegration {
             String sourceName = TITLE_SOURCE_PREFIX + titleInfo.getId();
             
             // 应用临时属性
-            SagaLoreStatsAPI.addTemporaryAttributes(player, sourceName, attributeList);
+            callSagaLoreStatsMethod("addTemporaryAttributes", player, sourceName, attributeList);
             
             // 记录玩家的属性源
             playerTitleSources.put(player.getUniqueId(), sourceName);
@@ -101,33 +130,51 @@ public class SagaLoreStatsIntegration {
     
     /**
      * 移除玩家的称号属性
-     * 
+     * 增强错误处理，确保即使SagaLoreStats有问题也能正常清理
+     *
      * @param player 玩家
      */
     public void removeTitleAttributes(Player player) {
-        if (!isEnabled() || player == null) {
+        if (player == null) {
             return;
         }
-        
+
+        UUID playerId = player.getUniqueId();
+        String sourceName = playerTitleSources.get(playerId);
+
         try {
-            UUID playerId = player.getUniqueId();
-            String sourceName = playerTitleSources.get(playerId);
-            
-            if (sourceName != null) {
-                // 移除临时属性
-                SagaLoreStatsAPI.removeTemporaryAttributes(player, sourceName);
-                
-                // 清除记录
+            // 检查SagaLoreStats是否可用
+            if (!isEnabled()) {
+                // SagaLoreStats不可用，只清理本地记录
                 playerTitleSources.remove(playerId);
-                
-                // 只在调试模式下显示详细信息
                 if (plugin.getConfigManager().getConfigValue("debug", false)) {
-                    plugin.getLogger().info("移除玩家 " + player.getName() + " 的称号SagaLoreStats属性");
+                    plugin.getLogger().info("SagaLoreStats不可用，只清理玩家 " + player.getName() + " 的本地记录");
                 }
+                return;
             }
-            
+
+            if (sourceName != null) {
+                // 尝试移除临时属性
+                try {
+                    callSagaLoreStatsMethod("removeTemporaryAttributes", player, sourceName);
+
+                    // 只在调试模式下显示详细信息
+                    if (plugin.getConfigManager().getConfigValue("debug", false)) {
+                        plugin.getLogger().info("成功移除玩家 " + player.getName() + " 的称号SagaLoreStats属性");
+                    }
+                } catch (Exception methodException) {
+                    // SagaLoreStats方法调用失败，可能插件有问题
+                    plugin.getLogger().warning("SagaLoreStats方法调用失败，玩家 " + player.getName() + " 的属性可能无法完全清理: " + methodException.getMessage());
+                }
+
+                // 无论是否成功，都清除本地记录
+                playerTitleSources.remove(playerId);
+            }
+
         } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING, "移除称号SagaLoreStats属性时出错", e);
+            // 发生任何错误都要清理本地记录，避免数据残留
+            playerTitleSources.remove(playerId);
+            plugin.getLogger().log(Level.WARNING, "移除称号SagaLoreStats属性时出错，已清理本地记录", e);
         }
     }
     
@@ -231,7 +278,8 @@ public class SagaLoreStatsIntegration {
         }
         
         try {
-            return SagaLoreStatsAPI.getPlayerAttributeValue(player, attributeKey);
+            Object result = callSagaLoreStatsMethod("getPlayerAttributeValue", player, attributeKey);
+            return result instanceof Number ? ((Number) result).doubleValue() : 0.0;
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "获取玩家称号属性值时出错", e);
             return 0.0;
@@ -250,7 +298,8 @@ public class SagaLoreStatsIntegration {
         }
         
         try {
-            return SagaLoreStatsAPI.getPlayerAttributes(player);
+            Object result = callSagaLoreStatsMethod("getPlayerAttributes", player);
+            return result instanceof Map ? (Map<String, Double>) result : Map.of();
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "获取玩家所有属性时出错", e);
             return Map.of();
@@ -259,11 +308,73 @@ public class SagaLoreStatsIntegration {
     
     /**
      * 清理玩家数据
-     * 
+     * 强制清理所有相关数据，即使SagaLoreStats有问题
+     *
      * @param playerId 玩家UUID
      */
     public void cleanupPlayerData(UUID playerId) {
+        String sourceName = playerTitleSources.get(playerId);
+
+        // 如果有记录的属性源，尝试清理
+        if (sourceName != null && isEnabled()) {
+            try {
+                // 尝试通过玩家对象清理
+                Player player = plugin.getServer().getPlayer(playerId);
+                if (player != null) {
+                    callSagaLoreStatsMethod("removeTemporaryAttributes", player, sourceName);
+                }
+            } catch (Exception e) {
+                // 清理失败，记录警告但继续清理本地数据
+                plugin.getLogger().warning("清理玩家 " + playerId + " 的SagaLoreStats数据时出错: " + e.getMessage());
+            }
+        }
+
+        // 无论如何都要清理本地记录
         playerTitleSources.remove(playerId);
+    }
+
+    /**
+     * 强制清理所有残留的SagaLoreStats属性
+     * 用于插件重启或SagaLoreStats出现问题时
+     *
+     * @param player 玩家
+     */
+    public void forceCleanupAllAttributes(Player player) {
+        if (player == null) {
+            return;
+        }
+
+        UUID playerId = player.getUniqueId();
+
+        try {
+            // 清理所有可能的称号属性源
+            for (int i = 0; i < 10; i++) { // 最多清理10个可能的源
+                String sourceName = TITLE_SOURCE_PREFIX + "title_" + i;
+                try {
+                    if (isEnabled()) {
+                        callSagaLoreStatsMethod("removeTemporaryAttributes", player, sourceName);
+                    }
+                } catch (Exception e) {
+                    // 忽略单个源的清理错误
+                }
+            }
+
+            // 清理当前记录的源
+            String currentSource = playerTitleSources.get(playerId);
+            if (currentSource != null && isEnabled()) {
+                try {
+                    callSagaLoreStatsMethod("removeTemporaryAttributes", player, currentSource);
+                } catch (Exception e) {
+                    // 忽略清理错误
+                }
+            }
+
+        } catch (Exception e) {
+            plugin.getLogger().warning("强制清理玩家 " + player.getName() + " 的SagaLoreStats属性时出错: " + e.getMessage());
+        } finally {
+            // 无论如何都要清理本地记录
+            playerTitleSources.remove(playerId);
+        }
     }
     
     /**
@@ -275,7 +386,7 @@ public class SagaLoreStatsIntegration {
             try {
                 Player player = plugin.getServer().getPlayer(entry.getKey());
                 if (player != null && player.isOnline()) {
-                    SagaLoreStatsAPI.removeTemporaryAttributes(player, entry.getValue());
+                    callSagaLoreStatsMethod("removeTemporaryAttributes", player, entry.getValue());
                 }
             } catch (Exception e) {
                 plugin.getLogger().log(Level.WARNING, "清理玩家称号属性时出错", e);
@@ -296,9 +407,118 @@ public class SagaLoreStatsIntegration {
         }
         
         try {
-            SagaLoreStatsAPI.refreshPlayerAttributes(player);
+            callSagaLoreStatsMethod("refreshPlayerAttributes", player);
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "刷新玩家属性缓存时出错", e);
+        }
+    }
+
+    /**
+     * 使用反射安全调用SagaLoreStats API方法
+     *
+     * @param methodName 方法名
+     * @param args 参数
+     * @return 调用结果
+     */
+    private Object callSagaLoreStatsMethod(String methodName, Object... args) {
+        try {
+            Class<?> apiClass = Class.forName("com.saga.sagalorestats.api.SagaLoreStatsAPI");
+
+            // 尝试查找匹配的方法
+            java.lang.reflect.Method targetMethod = null;
+            java.lang.reflect.Method[] methods = apiClass.getMethods();
+
+            for (java.lang.reflect.Method method : methods) {
+                if (method.getName().equals(methodName) && method.getParameterCount() == args.length) {
+                    Class<?>[] paramTypes = method.getParameterTypes();
+                    boolean matches = true;
+
+                    for (int i = 0; i < args.length; i++) {
+                        if (args[i] == null) {
+                            continue; // null可以匹配任何引用类型
+                        }
+
+                        Class<?> argType = args[i].getClass();
+                        Class<?> paramType = paramTypes[i];
+
+                        // 检查类型兼容性
+                        if (!isCompatible(argType, paramType)) {
+                            matches = false;
+                            break;
+                        }
+                    }
+
+                    if (matches) {
+                        targetMethod = method;
+                        break;
+                    }
+                }
+            }
+
+            if (targetMethod == null) {
+                plugin.getLogger().warning("未找到匹配的SagaLoreStats API方法: " + methodName +
+                    " (参数数量: " + args.length + ")");
+                return null;
+            }
+
+            return targetMethod.invoke(null, args);
+
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "调用SagaLoreStats API方法 " + methodName + " 时出错", e);
+            return null;
+        }
+    }
+
+    /**
+     * 检查参数类型是否兼容
+     *
+     * @param argType 实际参数类型
+     * @param paramType 方法参数类型
+     * @return 是否兼容
+     */
+    private boolean isCompatible(Class<?> argType, Class<?> paramType) {
+        // 完全匹配
+        if (paramType.isAssignableFrom(argType)) {
+            return true;
+        }
+
+        // 基本类型和包装类型的匹配
+        if (paramType.isPrimitive()) {
+            if (paramType == int.class && argType == Integer.class) return true;
+            if (paramType == double.class && argType == Double.class) return true;
+            if (paramType == float.class && argType == Float.class) return true;
+            if (paramType == long.class && argType == Long.class) return true;
+            if (paramType == boolean.class && argType == Boolean.class) return true;
+        }
+
+        // 特殊情况：List接口
+        if (paramType == List.class || paramType == java.util.Collection.class) {
+            return List.class.isAssignableFrom(argType);
+        }
+
+        return false;
+    }
+
+    /**
+     * 记录SagaLoreStats API中可用的方法（调试用）
+     *
+     * @param apiClass API类
+     */
+    private void logAvailableMethods(Class<?> apiClass) {
+        plugin.getLogger().info("SagaLoreStats API 可用方法:");
+        java.lang.reflect.Method[] methods = apiClass.getMethods();
+        for (java.lang.reflect.Method method : methods) {
+            if (method.getDeclaringClass() == apiClass) { // 只显示API类自己的方法
+                StringBuilder sb = new StringBuilder();
+                sb.append("  ").append(method.getName()).append("(");
+                Class<?>[] paramTypes = method.getParameterTypes();
+                for (int i = 0; i < paramTypes.length; i++) {
+                    if (i > 0) sb.append(", ");
+                    sb.append(paramTypes[i].getSimpleName());
+                }
+                sb.append(")");
+                plugin.getLogger().info(sb.toString());
+            }
         }
     }
 }

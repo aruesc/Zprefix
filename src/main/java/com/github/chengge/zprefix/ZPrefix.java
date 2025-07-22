@@ -2,6 +2,8 @@ package com.github.chengge.zprefix;
 
 import com.github.chengge.zprefix.command.TitleCommand;
 import com.github.chengge.zprefix.gui.TitleGUI;
+import com.github.chengge.zprefix.gui.UnlockedTitleGUI;
+import com.github.chengge.zprefix.integration.EconomyIntegration;
 import com.github.chengge.zprefix.integration.PlaceholderAPIExpansion;
 import com.github.chengge.zprefix.integration.SagaLoreStatsIntegration;
 import com.github.chengge.zprefix.listener.GUIListener;
@@ -29,6 +31,8 @@ public final class ZPrefix extends JavaPlugin {
     private TitleManager titleManager;
     private VanillaStatsManager vanillaStatsManager;
     private TitleGUI titleGUI;
+    private UnlockedTitleGUI unlockedTitleGUI;
+    private EconomyIntegration economyIntegration;
     private SagaLoreStatsIntegration sagaIntegration;
     private PlaceholderAPIExpansion placeholderExpansion;
 
@@ -184,9 +188,29 @@ public final class ZPrefix extends JavaPlugin {
             vanillaStatsManager = new VanillaStatsManager(this, configManager, titleManager);
             getLogger().info("✓ 统计管理器初始化完成 (使用Minecraft原版统计数据系统)");
 
-            // 第六步：GUI管理器
+            // 第六步：经济系统集成（可选，失败不影响主要功能）
+            getLogger().info("初始化经济系统集成...");
+            try {
+                economyIntegration = new EconomyIntegration(this);
+                economyIntegration.initialize();
+                getLogger().info("✓ 经济系统集成初始化完成");
+            } catch (Exception e) {
+                getLogger().warning("经济系统集成初始化失败，购买功能将被禁用: " + e.getMessage());
+                economyIntegration = null;
+            }
+
+            // 第七步：GUI管理器
             getLogger().info("初始化GUI管理器...");
             titleGUI = new TitleGUI(this, configManager, titleManager);
+
+            // 初始化未解锁称号GUI（需要经济系统集成）
+            if (economyIntegration != null) {
+                unlockedTitleGUI = new UnlockedTitleGUI(this, configManager, titleManager, economyIntegration);
+            } else {
+                // 即使没有经济系统，也要创建GUI（只是购买功能不可用）
+                economyIntegration = new EconomyIntegration(this); // 创建空的集成
+                unlockedTitleGUI = new UnlockedTitleGUI(this, configManager, titleManager, economyIntegration);
+            }
             getLogger().info("✓ GUI管理器初始化完成");
 
             getLogger().info("所有管理器初始化完成");
@@ -369,6 +393,14 @@ public final class ZPrefix extends JavaPlugin {
 
     public TitleGUI getTitleGUI() {
         return titleGUI;
+    }
+
+    public UnlockedTitleGUI getUnlockedTitleGUI() {
+        return unlockedTitleGUI;
+    }
+
+    public EconomyIntegration getEconomyIntegration() {
+        return economyIntegration;
     }
 
     public SagaLoreStatsIntegration getSagaIntegration() {

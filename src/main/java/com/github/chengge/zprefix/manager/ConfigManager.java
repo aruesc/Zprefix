@@ -128,7 +128,17 @@ public class ConfigManager {
         // 是否默认称号
         boolean isDefault = section.getBoolean("default", false);
 
-        return new TitleInfo(titleId, displayName, guiItem, attributes, sagaAttributes, unlockConditions, isDefault);
+        // 排序顺序
+        int sortOrder = section.getInt("sort-order", 999);
+
+        // 是否隐藏
+        boolean isHidden = section.getBoolean("hidden", false);
+
+        // 购买选项
+        Map<String, Object> purchaseOptions = loadPurchaseOptions(section.getConfigurationSection("purchase"));
+
+        return new TitleInfo(titleId, displayName, guiItem, attributes, sagaAttributes,
+                           unlockConditions, isDefault, sortOrder, isHidden, purchaseOptions);
     }
     
     /**
@@ -179,25 +189,31 @@ public class ConfigManager {
     
     /**
      * 加载属性配置
-     * 
+     * 使用AttributeAdapter进行跨版本兼容
+     *
      * @param section 属性配置节点
      * @return 属性映射
      */
     private Map<Attribute, Double> loadAttributes(ConfigurationSection section) {
         Map<Attribute, Double> attributes = new HashMap<>();
-        
+
         if (section != null) {
             for (String attributeName : section.getKeys(false)) {
                 try {
-                    Attribute attribute = Attribute.valueOf(attributeName.toUpperCase());
-                    double value = section.getDouble(attributeName);
-                    attributes.put(attribute, value);
-                } catch (IllegalArgumentException e) {
-                    plugin.getLogger().warning("无效的属性类型: " + attributeName);
+                    // 使用AttributeAdapter获取属性，支持跨版本兼容
+                    Attribute attribute = com.github.chengge.zprefix.util.AttributeAdapter.getAttributeByName(attributeName);
+                    if (attribute != null) {
+                        double value = section.getDouble(attributeName);
+                        attributes.put(attribute, value);
+                    } else {
+                        plugin.getLogger().warning("无效的属性类型: " + attributeName + " (可能不支持当前版本)");
+                    }
+                } catch (Exception e) {
+                    plugin.getLogger().warning("加载属性 " + attributeName + " 时出错: " + e.getMessage());
                 }
             }
         }
-        
+
         return attributes;
     }
     
@@ -246,14 +262,63 @@ public class ConfigManager {
         
         return conditions;
     }
-    
+
+    /**
+     * 加载购买选项
+     *
+     * @param section 购买选项配置节点
+     * @return 购买选项映射
+     */
+    private Map<String, Object> loadPurchaseOptions(ConfigurationSection section) {
+        Map<String, Object> options = new HashMap<>();
+
+        if (section != null) {
+            if (section.contains("money")) {
+                options.put("money", section.getDouble("money"));
+            }
+            if (section.contains("points")) {
+                options.put("points", section.getInt("points"));
+            }
+        }
+
+        return options;
+    }
+
     /**
      * 获取所有称号信息
-     * 
+     *
      * @return 称号信息映射
      */
     public Map<String, TitleInfo> getAllTitles() {
         return new HashMap<>(titleInfoMap);
+    }
+
+    /**
+     * 获取所有可见称号信息（排除隐藏称号）
+     *
+     * @return 可见称号信息映射
+     */
+    public Map<String, TitleInfo> getVisibleTitles() {
+        Map<String, TitleInfo> visibleTitles = new HashMap<>();
+        for (Map.Entry<String, TitleInfo> entry : titleInfoMap.entrySet()) {
+            if (!entry.getValue().isHidden()) {
+                visibleTitles.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return visibleTitles;
+    }
+
+    /**
+     * 获取排序后的称号列表
+     *
+     * @param includeHidden 是否包含隐藏称号
+     * @return 排序后的称号列表
+     */
+    public List<TitleInfo> getSortedTitles(boolean includeHidden) {
+        return titleInfoMap.values().stream()
+                .filter(title -> includeHidden || !title.isHidden())
+                .sorted((t1, t2) -> Integer.compare(t1.getSortOrder(), t2.getSortOrder()))
+                .collect(java.util.stream.Collectors.toList());
     }
     
     /**

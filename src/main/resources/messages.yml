@@ -41,6 +41,101 @@ title:
   cleanup-success: "§a✓ 已清理 §c{count} §a个无效称号"
   refresh-success: "§a✓ 界面已刷新，数据已更新"
 
+  # 购买相关消息
+  purchase-success: "§a✓ 成功购买称号: §f{title} §a花费: §e{price}"
+  purchase-failed: "§c✗ 购买失败，请稍后重试"
+  insufficient-money: "§c✗ 金币不足！需要: §e{price}"
+  insufficient-points: "§c✗ 点券不足！需要: §e{price}"
+  insufficient-both: "§c✗ 金币和点券都不足！需要金币: §e{money} §c或点券: §e{points}"
+  no-purchase-option: "§c✗ 此称号无法购买"
+  unlock-conditions: "§e称号 §f{title} §e的解锁条件请查看GUI界面"
+
+  # title info命令相关消息
+  info-header: "§6=== §f{title} §6称号信息 ==="
+  info-conditions-header: "§6解锁条件:"
+  info-no-conditions: "§6解锁条件: §7无特殊条件"
+  info-status-current: "§a✓ 状态: §f当前使用中"
+  info-status-unlocked: "§a✓ 状态: §f已解锁，可切换"
+  info-status-locked: "§c✗ 状态: §f未解锁"
+
+  # 解锁条件显示文本（可自定义）
+  unlock-condition:
+    # 基础统计条件
+    play-time: "§7游戏时间: §f{value} §7小时"
+    kill-mobs: "§7击杀怪物: §f{value} §7只"
+    player-kills: "§7击杀玩家: §f{value} §7次"
+    damage-taken: "§7受到伤害: §f{value} §7点"
+    damage-dealt: "§7造成伤害: §f{value} §7点"
+    walk-distance: "§7行走距离: §f{value} §7米"
+    distance-traveled: "§7总移动距离: §f{value} §7米"
+    deaths: "§7死亡次数: §f{value} §7次"
+    jump: "§7跳跃次数: §f{value} §7次"
+    fish-caught: "§7钓鱼次数: §f{value} §7次"
+    animals-bred: "§7繁殖动物: §f{value} §7只"
+    items-crafted: "§7制作物品: §f{value} §7个"
+    items-enchanted: "§7附魔物品: §f{value} §7个"
+    blocks-broken: "§7破坏方块: §f{value} §7个"
+    villager-trades: "§7村民交易: §f{value} §7次"
+    food-eaten: "§7食物消费: §f{value} §7个"
+    potions-drunk: "§7药水消费: §f{value} §7瓶"
+    tools-broken: "§7工具损坏: §f{value} §7个"
+
+    # 特殊条件
+    admin-only: "§c管理员专用"
+    auto-unlock: "§a自动解锁"
+    default: "§b默认称号"
+
+    # 矿物挖掘相关
+    diamonds-mined: "§7挖掘钻石矿: §f{value} §7个"
+    emeralds-mined: "§7挖掘绿宝石矿: §f{value} §7个"
+    ancient-debris-mined: "§7挖掘远古残骸: §f{value} §7个"
+    gold-mined: "§7挖掘金矿: §f{value} §7个"
+    iron-mined: "§7挖掘铁矿: §f{value} §7个"
+    coal-mined: "§7挖掘煤矿: §f{value} §7个"
+    copper-mined: "§7挖掘铜矿: §f{value} §7个"
+    lapis-mined: "§7挖掘青金石矿: §f{value} §7个"
+    redstone-mined: "§7挖掘红石矿: §f{value} §7个"
+    quartz-mined: "§7挖掘石英矿: §f{value} §7个"
+
+    # Boss击杀相关
+    ender-dragons-killed: "§7击杀末影龙: §f{value} §7只"
+    withers-killed: "§7击杀凋零: §f{value} §7只"
+    elder-guardians-killed: "§7击杀远古守卫者: §f{value} §7只"
+    wardens-killed: "§7击杀监守者: §f{value} §7只"
+
+    # 怪物击杀相关
+    zombies-killed: "§7击杀僵尸: §f{value} §7只"
+    skeletons-killed: "§7击杀骷髅: §f{value} §7只"
+    creepers-killed: "§7击杀苦力怕: §f{value} §7只"
+    spiders-killed: "§7击杀蜘蛛: §f{value} §7只"
+    endermen-killed: "§7击杀末影人: §f{value} §7只"
+
+    # 动物击杀相关
+    cows-killed: "§7击杀牛: §f{value} §7只"
+    pigs-killed: "§7击杀猪: §f{value} §7只"
+    sheep-killed: "§7击杀羊: §f{value} §7只"
+    chickens-killed: "§7击杀鸡: §f{value} §7只"
+
+    # 特殊事件
+    special-event: "§7特殊事件: §e{value}"
+
+    # 特殊事件详细配置
+    get-diamond: "§7获得钻石"
+    get-emerald: "§7获得绿宝石"
+    get-netherite: "§7获得下界合金锭"
+    get-totem: "§7获得不死图腾"
+    get-elytra: "§7获得鞘翅"
+    get-nether-star: "§7获得下界之星"
+    get-dragon-egg: "§7获得龙蛋"
+    enter-nether: "§7进入下界"
+    enter-end: "§7进入末地"
+
+    # 布尔值条件的特殊处理
+    auto-unlock-true: "§a✓ 自动解锁 (加入服务器时获得)"
+    auto-unlock-false: "§c✗ 不自动解锁"
+    admin-only: "§c⚠ 管理员专用 (只能由管理员给予)"
+    default: "§b⭐ 默认称号"
+
 # GUI相关消息
 gui:
   title-gui: "§6§l称号系统"

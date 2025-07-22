@@ -79,6 +79,45 @@ gui:
         - "§7点击刷新界面"
         - "§7重新加载称号数据"
 
+    # 未解锁称号按钮
+    unlocked-titles:
+      slot: 46  # 最后一行左侧第二个位置
+      material: "CHEST"
+      name: "§c§l未解锁称号"
+      lore:
+        - "§7查看所有未解锁的称号"
+        - "§7包含解锁条件和购买选项"
+        - ""
+        - "§e点击打开"
+
+    # 返回主界面按钮（用于未解锁称号GUI）
+    back-to-main:
+      slot: 46  # 最后一行左侧第二个位置
+      material: "COMPASS"
+      name: "§e返回主界面"
+      lore:
+        - "§7点击返回称号主界面"
+
+  # 未解锁称号GUI配置
+  unlocked-gui:
+    # GUI标题
+    title: "§c§l未解锁称号"
+
+    # 按钮配置（继承主GUI的配置，但可以覆盖）
+    buttons:
+      # 页面信息显示（显示未解锁称号的信息）
+      page-info:
+        slot: 48  # 最后一行中间位置
+        material: "BOOK"
+        name: "§e页面信息"
+        lore:
+          - "§7当前页: §e{current_page} §7/ §e{total_pages}"
+          - "§7未解锁称号总数: §e{total_titles}"
+          - ""
+          - "§6经济系统状态:"
+          - "§a  Vault: {vault_status}"
+          - "§a  PlayerPoints: {points_status}"
+
 # 进度统计配置
 progress:
   # 是否启用进度统计功能

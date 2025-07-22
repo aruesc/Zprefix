@@ -76,8 +76,15 @@ public class GUIListener implements Listener {
             int slot = event.getSlot();
             ItemStack clickedItem = event.getCurrentItem();
 
-            // 处理点击
-            boolean handled = titleGUI.handleGUIClick(player, slot, clickedItem);
+            // 根据GUI类型处理点击
+            boolean handled = false;
+            if (isUnlockedTitleGUI(inventory)) {
+                // 处理未解锁称号GUI点击
+                handled = plugin.getUnlockedTitleGUI().handleGUIClick(player, slot, clickedItem);
+            } else {
+                // 处理主称号GUI点击
+                handled = plugin.getTitleGUI().handleGUIClick(player, slot, clickedItem);
+            }
 
             if (!handled && plugin.getConfigManager().getConfigValue("debug", false)) {
                 plugin.getLogger().info("玩家 " + player.getName() + " 点击了GUI中的空白区域，槽位: " + slot);
@@ -135,8 +142,11 @@ public class GUIListener implements Listener {
         
         try {
             // 清理玩家GUI相关数据
-            titleGUI.cleanupPlayerData(player.getUniqueId());
-            
+            plugin.getTitleGUI().cleanupPlayerData(player.getUniqueId());
+            if (plugin.getUnlockedTitleGUI() != null) {
+                plugin.getUnlockedTitleGUI().cleanupPlayerData(player.getUniqueId());
+            }
+
         } catch (Exception e) {
             plugin.getLogger().warning("处理玩家 " + player.getName() + " 的GUI关闭事件时出错: " + e.getMessage());
         }
@@ -159,9 +169,33 @@ public class GUIListener implements Listener {
         }
 
         String title = inventory.getViewers().get(0).getOpenInventory().getTitle();
-        String expectedTitlePrefix = MessageUtil.colorize("§6§l称号系统");
+        String mainTitlePrefix = MessageUtil.colorize("§6§l称号系统");
+        String unlockedTitlePrefix = MessageUtil.colorize("§c§l未解锁称号");
 
-        // 检查标题是否以"§6§l称号系统"开头（因为现在包含页码信息）
-        return title != null && title.startsWith(expectedTitlePrefix);
+        // 检查标题是否为称号相关GUI
+        return title != null && (title.startsWith(mainTitlePrefix) || title.startsWith(unlockedTitlePrefix));
+    }
+
+    /**
+     * 检查是否为未解锁称号GUI
+     *
+     * @param inventory 库存界面
+     * @return 是否为未解锁称号GUI
+     */
+    private boolean isUnlockedTitleGUI(Inventory inventory) {
+        if (inventory == null) {
+            return false;
+        }
+
+        // 使用 InventoryView 来获取标题
+        if (inventory.getViewers().isEmpty()) {
+            return false;
+        }
+
+        String title = inventory.getViewers().get(0).getOpenInventory().getTitle();
+        String unlockedTitlePrefix = MessageUtil.colorize("§c§l未解锁称号");
+
+        // 检查标题是否为未解锁称号GUI
+        return title != null && title.startsWith(unlockedTitlePrefix);
     }
 }

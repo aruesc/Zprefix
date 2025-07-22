@@ -119,31 +119,23 @@ public class TitleCommand implements CommandExecutor, TabCompleter {
 
         // 通过显示名查找称号ID
         String titleId = findTitleIdByDisplayName(titleDisplayName);
-
         if (titleId == null) {
             MessageUtil.sendPrefixedMessage(sender, "title.title-not-found", "title", titleDisplayName);
             return true;
         }
 
-        // 检查称号是否存在（双重验证）
-        if (!configManager.titleExists(titleId)) {
-            MessageUtil.sendPrefixedMessage(sender, "title.title-not-found", "title", titleDisplayName);
-            return true;
-        }
-
-        // 检查是否已解锁
         if (!titleManager.hasTitle(player, titleId)) {
             TitleInfo titleInfo = configManager.getTitleInfo(titleId);
-            MessageUtil.sendPrefixedMessage(sender, "title.title-not-unlocked");
+            MessageUtil.sendPrefixedMessage(sender, "title.title-not-owned",
+                Map.of("player", player.getName(), "title", titleInfo.getDisplayName()));
             return true;
         }
 
-        // 设置称号
         if (titleManager.setPlayerTitle(player, titleId)) {
             TitleInfo titleInfo = configManager.getTitleInfo(titleId);
             MessageUtil.sendPrefixedMessage(sender, "title.title-set", "title", titleInfo.getDisplayName());
         } else {
-            MessageUtil.sendPrefixedMessage(sender, "title.title-not-unlocked");
+            MessageUtil.sendPrefixedMessage(sender, "title.title-set-failed");
         }
 
         return true;
@@ -252,262 +244,30 @@ public class TitleCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         
-        // 显示称号信息 - 简化版本
-        sender.sendMessage("§6=== §f" + titleInfo.getDisplayName() + " §6称号信息 ===");
+        // 显示称号信息 - 使用配置化消息
+        String titleHeader = MessageUtil.getMessage("title.info-header", "title", titleInfo.getDisplayName());
+        sender.sendMessage(titleHeader);
         sender.sendMessage("");
 
         // 显示解锁条件
         Map<String, Object> unlockConditions = titleInfo.getUnlockConditions();
         if (unlockConditions != null && !unlockConditions.isEmpty()) {
-            sender.sendMessage("§6解锁条件:");
+            String conditionsHeader = MessageUtil.getMessage("title.info-conditions-header");
+            sender.sendMessage(conditionsHeader);
+            
             for (Map.Entry<String, Object> condition : unlockConditions.entrySet()) {
                 String conditionType = condition.getKey();
                 Object conditionValue = condition.getValue();
-
-                switch (conditionType) {
-                    case "auto-unlock":
-                        boolean autoUnlock = (Boolean) conditionValue;
-                        if (autoUnlock) {
-                            sender.sendMessage("  §a✓ 自动解锁 (加入服务器时获得)");
-                        } else {
-                            sender.sendMessage("  §c✗ 不自动解锁");
-                        }
-                        break;
-
-                    case "admin-only":
-                        boolean adminOnly = (Boolean) conditionValue;
-                        if (adminOnly) {
-                            sender.sendMessage("  §c⚠ 管理员专用 (只能由管理员给予)");
-                        }
-                        break;
-
-                    // 基础统计参数
-                    case "kill-mobs":
-                        int requiredKills = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7⚔ 击杀怪物: §e" + requiredKills + " §7只");
-                        break;
-
-                    case "player-kills":
-                        int requiredPlayerKills = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7⚔ PVP击杀: §e" + requiredPlayerKills + " §7次");
-                        break;
-
-                    case "damage-taken":
-                        double requiredDamage = ((Number) conditionValue).doubleValue();
-                        sender.sendMessage("  §7💔 受到伤害: §e" + String.format("%.1f", requiredDamage) + " §7点");
-                        break;
-
-                    case "damage-dealt":
-                        double requiredDamageDealt = ((Number) conditionValue).doubleValue();
-                        sender.sendMessage("  §7⚔ 造成伤害: §e" + String.format("%.1f", requiredDamageDealt) + " §7点");
-                        break;
-
-                    case "walk-distance":
-                        double requiredDistance = ((Number) conditionValue).doubleValue();
-                        sender.sendMessage("  §7🚶 行走距离: §e" + String.format("%.0f", requiredDistance) + " §7米");
-                        break;
-
-                    case "distance-traveled":
-                        double requiredTotalDistance = ((Number) conditionValue).doubleValue();
-                        sender.sendMessage("  §7🌍 总移动距离: §e" + String.format("%.0f", requiredTotalDistance) + " §7米");
-                        break;
-
-                    case "play-time":
-                        double requiredTime = ((Number) conditionValue).doubleValue();
-                        sender.sendMessage("  §7⏰ 游戏时间: §e" + String.format("%.1f", requiredTime) + " §7小时");
-                        break;
-
-                    case "deaths":
-                        int requiredDeaths = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7💀 死亡次数: §e" + requiredDeaths + " §7次");
-                        break;
-
-                    case "jump":
-                        int requiredJumps = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🦘 跳跃次数: §e" + requiredJumps + " §7次");
-                        break;
-
-                    case "fish-caught":
-                        int requiredFish = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🎣 钓鱼次数: §e" + requiredFish + " §7次");
-                        break;
-
-                    case "animals-bred":
-                        int requiredBreeding = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🐄 繁殖动物: §e" + requiredBreeding + " §7只");
-                        break;
-
-                    case "items-crafted":
-                        int requiredCrafting = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🔨 制作物品: §e" + requiredCrafting + " §7个");
-                        break;
-
-                    case "items-enchanted":
-                        int requiredEnchanting = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7✨ 附魔物品: §e" + requiredEnchanting + " §7个");
-                        break;
-
-                    case "blocks-broken":
-                        int requiredBlocksBroken = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7⛏ 破坏方块: §e" + requiredBlocksBroken + " §7个");
-                        break;
-
-                    // 矿物挖掘数量统计
-                    case "diamonds-mined":
-                        int requiredDiamonds = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7💎 挖掘钻石矿: §e" + requiredDiamonds + " §7个");
-                        break;
-
-                    case "emeralds-mined":
-                        int requiredEmeralds = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7💚 挖掘绿宝石矿: §e" + requiredEmeralds + " §7个");
-                        break;
-
-                    case "ancient-debris-mined":
-                        int requiredDebris = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🔥 挖掘远古残骸: §e" + requiredDebris + " §7个");
-                        break;
-
-                    case "gold-mined":
-                        int requiredGold = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🟨 挖掘金矿: §e" + requiredGold + " §7个");
-                        break;
-
-                    case "iron-mined":
-                        int requiredIron = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7⚪ 挖掘铁矿: §e" + requiredIron + " §7个");
-                        break;
-
-                    case "coal-mined":
-                        int requiredCoal = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7⚫ 挖掘煤矿: §e" + requiredCoal + " §7个");
-                        break;
-
-                    case "copper-mined":
-                        int requiredCopper = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🟫 挖掘铜矿: §e" + requiredCopper + " §7个");
-                        break;
-
-                    case "lapis-mined":
-                        int requiredLapis = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🔵 挖掘青金石矿: §e" + requiredLapis + " §7个");
-                        break;
-
-                    case "redstone-mined":
-                        int requiredRedstone = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🔴 挖掘红石矿: §e" + requiredRedstone + " §7个");
-                        break;
-
-                    case "quartz-mined":
-                        int requiredQuartz = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7⚪ 挖掘石英矿: §e" + requiredQuartz + " §7个");
-                        break;
-
-                    // Boss击杀数量统计
-                    case "ender-dragons-killed":
-                        int requiredDragons = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🐉 击杀末影龙: §e" + requiredDragons + " §7条");
-                        break;
-
-                    case "withers-killed":
-                        int requiredWithers = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7💀 击杀凋零: §e" + requiredWithers + " §7只");
-                        break;
-
-                    case "elder-guardians-killed":
-                        int requiredElderGuardians = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🐟 击杀远古守卫者: §e" + requiredElderGuardians + " §7只");
-                        break;
-
-                    case "wardens-killed":
-                        int requiredWardens = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7👁 击杀监守者: §e" + requiredWardens + " §7只");
-                        break;
-
-                    // 怪物击杀数量统计
-                    case "zombies-killed":
-                        int requiredZombies = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🧟 击杀僵尸: §e" + requiredZombies + " §7只");
-                        break;
-
-                    case "skeletons-killed":
-                        int requiredSkeletons = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7💀 击杀骷髅: §e" + requiredSkeletons + " §7只");
-                        break;
-
-                    case "creepers-killed":
-                        int requiredCreepers = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7💥 击杀苦力怕: §e" + requiredCreepers + " §7只");
-                        break;
-
-                    case "spiders-killed":
-                        int requiredSpiders = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🕷 击杀蜘蛛: §e" + requiredSpiders + " §7只");
-                        break;
-
-                    case "endermen-killed":
-                        int requiredEndermen = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7👤 击杀末影人: §e" + requiredEndermen + " §7只");
-                        break;
-
-                    // 动物击杀数量统计
-                    case "cows-killed":
-                        int requiredCows = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🐄 击杀牛: §e" + requiredCows + " §7只");
-                        break;
-
-                    case "pigs-killed":
-                        int requiredPigs = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🐷 击杀猪: §e" + requiredPigs + " §7只");
-                        break;
-
-                    case "sheep-killed":
-                        int requiredSheep = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🐑 击杀羊: §e" + requiredSheep + " §7只");
-                        break;
-
-                    case "chickens-killed":
-                        int requiredChickens = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🐔 击杀鸡: §e" + requiredChickens + " §7只");
-                        break;
-
-                    // 生活活动数量统计
-                    case "villager-trades":
-                        int requiredTrades = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🏪 村民交易: §e" + requiredTrades + " §7次");
-                        break;
-
-                    case "food-eaten":
-                        int requiredFoodEaten = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🍖 食物消费: §e" + requiredFoodEaten + " §7个");
-                        break;
-
-                    case "potions-drunk":
-                        int requiredPotionsDrunk = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🧪 药水消费: §e" + requiredPotionsDrunk + " §7瓶");
-                        break;
-
-                    case "tools-broken":
-                        int requiredToolsBroken = ((Number) conditionValue).intValue();
-                        sender.sendMessage("  §7🔧 工具损坏: §e" + requiredToolsBroken + " §7个");
-                        break;
-
-                    case "special-event":
-                        String eventId = (String) conditionValue;
-                        String eventName = getEventDisplayName(eventId);
-                        sender.sendMessage("  §7✨ 特殊事件: §e" + eventName);
-                        break;
-
-                    case "default":
-                        boolean isDefault = (Boolean) conditionValue;
-                        if (isDefault) {
-                            sender.sendMessage("  §b⭐ 默认称号");
-                        }
-                        break;
+                
+                // 使用统一的格式化方法
+                String conditionText = formatUnlockConditionForInfo(conditionType, conditionValue);
+                if (conditionText != null && !conditionText.isEmpty()) {
+                    sender.sendMessage("  " + conditionText);
                 }
             }
         } else {
-            sender.sendMessage("§6解锁条件: §7无特殊条件");
+            String noConditions = MessageUtil.getMessage("title.info-no-conditions");
+            sender.sendMessage(noConditions);
         }
         sender.sendMessage("");
 
@@ -517,21 +277,84 @@ public class TitleCommand implements CommandExecutor, TabCompleter {
             boolean hasUnlocked = titleManager.getPlayerData(player).hasUnlockedTitle(titleId);
             boolean isCurrent = titleId.equals(titleManager.getPlayerData(player).getCurrentTitle());
 
-            sender.sendMessage("");
+            String statusMessage;
             if (hasUnlocked) {
                 if (isCurrent) {
-                    sender.sendMessage("§a✓ 状态: §f当前使用中");
+                    statusMessage = MessageUtil.getMessage("title.info-status-current");
                 } else {
-                    sender.sendMessage("§a✓ 状态: §f已解锁，可切换");
+                    statusMessage = MessageUtil.getMessage("title.info-status-unlocked");
                 }
             } else {
-                sender.sendMessage("§c✗ 状态: §f未解锁");
+                statusMessage = MessageUtil.getMessage("title.info-status-locked");
             }
+            sender.sendMessage(statusMessage);
         }
 
         return true;
     }
-    
+
+    /**
+     * 格式化解锁条件文本用于info命令显示
+     *
+     * @param key 条件键
+     * @param value 条件值
+     * @return 格式化后的文本
+     */
+    private String formatUnlockConditionForInfo(String key, Object value) {
+        // 特殊处理布尔值条件
+        if (value instanceof Boolean) {
+            boolean boolValue = (Boolean) value;
+            if ("auto-unlock".equals(key)) {
+                if (boolValue) {
+                    return MessageUtil.getMessage("title.unlock-condition.auto-unlock-true");
+                } else {
+                    return MessageUtil.getMessage("title.unlock-condition.auto-unlock-false");
+                }
+            } else if ("admin-only".equals(key)) {
+                if (boolValue) {
+                    return MessageUtil.getMessage("title.unlock-condition.admin-only");
+                }
+                return null; // 不显示 admin-only: false
+            } else if ("default".equals(key)) {
+                if (boolValue) {
+                    return MessageUtil.getMessage("title.unlock-condition.default");
+                }
+                return null; // 不显示 default: false
+            }
+        }
+
+        // 特殊处理special-event类型
+        if ("special-event".equals(key)) {
+            String eventId = String.valueOf(value);
+            String eventMessageKey = "title.unlock-condition." + eventId;
+            String eventTemplate = MessageUtil.getMessage(eventMessageKey);
+
+            // 如果找到了特殊事件的配置
+            if (eventTemplate != null && !eventTemplate.startsWith("§c消息配置错误:")) {
+                return eventTemplate;
+            }
+
+            // 如果没有找到特殊事件配置，使用通用格式
+            String generalTemplate = MessageUtil.getMessage("title.unlock-condition.special-event");
+            if (generalTemplate != null && !generalTemplate.startsWith("§c消息配置错误:")) {
+                return generalTemplate.replace("{value}", eventId);
+            }
+        }
+
+        // 使用统一的格式化方法
+        String messageKey = "title.unlock-condition." + key;
+        String template = MessageUtil.getMessage(messageKey);
+
+        // 检查是否找到了有效的配置（不是错误消息）
+        if (template != null && !template.startsWith("§c消息配置错误:")) {
+            // 找到了配置的模板，替换占位符
+            return template.replace("{value}", String.valueOf(value));
+        }
+
+        // 如果没有找到配置，使用默认格式
+        return "§7" + key + ": §e" + value;
+    }
+
     /**
      * 处理给予称号命令
      */
@@ -539,43 +362,56 @@ public class TitleCommand implements CommandExecutor, TabCompleter {
         if (!MessageUtil.checkPermission(sender, "zprefix.give")) {
             return true;
         }
-        
+
         if (args.length < 3) {
-            MessageUtil.sendPrefixedMessage(sender, "common.invalid-args", "usage", "/title give <玩家> <称号>");
+            MessageUtil.sendPrefixedMessage(sender, "common.invalid-args", "usage", "/title give <玩家> <称号显示名>");
             return true;
         }
-        
+
         String playerName = args[1];
-        String titleId = args[2];
-        
+
+        // 将参数拼接为完整的称号显示名（支持带空格的称号名）
+        StringBuilder titleNameBuilder = new StringBuilder();
+        for (int i = 2; i < args.length; i++) {
+            if (i > 2) {
+                titleNameBuilder.append(" ");
+            }
+            titleNameBuilder.append(args[i]);
+        }
+        String titleDisplayName = titleNameBuilder.toString();
+
         Player target = Bukkit.getPlayer(playerName);
         if (target == null) {
             MessageUtil.sendPrefixedMessage(sender, "common.player-not-found", "player", playerName);
             return true;
         }
-        
-        if (!configManager.titleExists(titleId)) {
-            MessageUtil.sendPrefixedMessage(sender, "title.title-not-found", "title", titleId);
+
+        // 通过显示名查找称号ID
+        String titleId = findTitleIdByDisplayName(titleDisplayName);
+        if (titleId == null) {
+            MessageUtil.sendPrefixedMessage(sender, "title.title-not-found", "title", titleDisplayName);
             return true;
         }
-        
+
         if (titleManager.hasTitle(target, titleId)) {
-            MessageUtil.sendPrefixedMessage(sender, "title.title-already-unlocked", "player", target.getName());
+            TitleInfo titleInfo = configManager.getTitleInfo(titleId);
+            MessageUtil.sendPrefixedMessage(sender, "title.title-already-unlocked",
+                Map.of("player", target.getName(), "title", titleInfo.getDisplayName()));
             return true;
         }
-        
+
         if (titleManager.givePlayerTitle(target, titleId)) {
             TitleInfo titleInfo = configManager.getTitleInfo(titleId);
-            MessageUtil.sendPrefixedMessage(sender, "title.title-given", 
+            MessageUtil.sendPrefixedMessage(sender, "title.title-given",
                 Map.of("player", target.getName(), "title", titleInfo.getDisplayName()));
-            
+
             // 通知目标玩家
             MessageUtil.sendPrefixedMessage(target, "title.title-unlocked", "title", titleInfo.getDisplayName());
         }
-        
+
         return true;
     }
-    
+
     /**
      * 处理移除称号命令
      */
@@ -583,35 +419,53 @@ public class TitleCommand implements CommandExecutor, TabCompleter {
         if (!MessageUtil.checkPermission(sender, "zprefix.take")) {
             return true;
         }
-        
+
         if (args.length < 3) {
-            MessageUtil.sendPrefixedMessage(sender, "common.invalid-args", "usage", "/title take <玩家> <称号>");
+            MessageUtil.sendPrefixedMessage(sender, "common.invalid-args", "usage", "/title take <玩家> <称号显示名>");
             return true;
         }
-        
+
         String playerName = args[1];
-        String titleId = args[2];
-        
+
+        // 将参数拼接为完整的称号显示名（支持带空格的称号名）
+        StringBuilder titleNameBuilder = new StringBuilder();
+        for (int i = 2; i < args.length; i++) {
+            if (i > 2) {
+                titleNameBuilder.append(" ");
+            }
+            titleNameBuilder.append(args[i]);
+        }
+        String titleDisplayName = titleNameBuilder.toString();
+
         Player target = Bukkit.getPlayer(playerName);
         if (target == null) {
             MessageUtil.sendPrefixedMessage(sender, "common.player-not-found", "player", playerName);
             return true;
         }
-        
-        if (!titleManager.hasTitle(target, titleId)) {
-            MessageUtil.sendPrefixedMessage(sender, "title.title-not-owned", "player", target.getName());
+
+        // 通过显示名查找称号ID
+        String titleId = findTitleIdByDisplayName(titleDisplayName);
+        if (titleId == null) {
+            MessageUtil.sendPrefixedMessage(sender, "title.title-not-found", "title", titleDisplayName);
             return true;
         }
-        
+
+        if (!titleManager.hasTitle(target, titleId)) {
+            TitleInfo titleInfo = configManager.getTitleInfo(titleId);
+            MessageUtil.sendPrefixedMessage(sender, "title.title-not-owned",
+                Map.of("player", target.getName(), "title", titleInfo.getDisplayName()));
+            return true;
+        }
+
         if (titleManager.takePlayerTitle(target, titleId)) {
             TitleInfo titleInfo = configManager.getTitleInfo(titleId);
-            MessageUtil.sendPrefixedMessage(sender, "title.title-taken", 
+            MessageUtil.sendPrefixedMessage(sender, "title.title-taken",
                 Map.of("player", target.getName(), "title", titleInfo.getDisplayName()));
         }
-        
+
         return true;
     }
-    
+
     /**
      * 处理重载命令
      */
@@ -619,7 +473,7 @@ public class TitleCommand implements CommandExecutor, TabCompleter {
         if (!MessageUtil.checkPermission(sender, "zprefix.reload")) {
             return true;
         }
-        
+
         try {
             configManager.reloadConfigs();
             MessageUtil.sendPrefixedMessage(sender, "common.config-reloaded");
@@ -627,7 +481,7 @@ public class TitleCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage("§c重载配置时出错: " + e.getMessage());
             plugin.getLogger().warning("重载配置时出错: " + e.getMessage());
         }
-        
+
         return true;
     }
 
@@ -658,34 +512,20 @@ public class TitleCommand implements CommandExecutor, TabCompleter {
     }
 
     /**
-     * 清理所有在线玩家的无效称号
+     * 处理清理所有玩家命令
      */
     private boolean handleCleanupAllCommand(CommandSender sender) {
-        int totalCleaned = 0;
-        int playersAffected = 0;
-
-        sender.sendMessage("§e§l[称号系统] §7开始清理所有在线玩家的无效称号数据...");
-
+        int cleanedCount = 0;
         for (Player player : Bukkit.getOnlinePlayers()) {
-            int cleaned = titleManager.cleanupInvalidTitles(player);
-            if (cleaned > 0) {
-                totalCleaned += cleaned;
-                playersAffected++;
-                sender.sendMessage("§7- 玩家 §e" + player.getName() + " §7清理了 §c" + cleaned + " §7个无效称号");
-            }
+            cleanedCount += titleManager.cleanupInvalidTitles(player);
         }
 
-        if (totalCleaned > 0) {
-            sender.sendMessage("§a§l[称号系统] §7清理完成！共为 §e" + playersAffected + " §7名玩家清理了 §c" + totalCleaned + " §7个无效称号");
-        } else {
-            sender.sendMessage("§a§l[称号系统] §7清理完成！未发现无效称号数据");
-        }
-
+        MessageUtil.sendPrefixedMessage(sender, "title.cleanup-success", "count", String.valueOf(cleanedCount));
         return true;
     }
 
     /**
-     * 清理指定玩家的无效称号
+     * 处理清理指定玩家命令
      */
     private boolean handleCleanupPlayerCommand(CommandSender sender, String[] args) {
         if (args.length < 3) {
@@ -702,15 +542,8 @@ public class TitleCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        int cleaned = titleManager.cleanupInvalidTitles(target);
-
-        if (cleaned > 0) {
-            sender.sendMessage("§a§l[称号系统] §7已为玩家 §e" + target.getName() + " §7清理了 §c" + cleaned + " §7个无效称号");
-            target.sendMessage("§e§l[称号系统] §7管理员为您清理了 §c" + cleaned + " §7个无效称号");
-        } else {
-            sender.sendMessage("§a§l[称号系统] §7玩家 §e" + target.getName() + " §7没有无效称号数据");
-        }
-
+        int cleanedCount = titleManager.cleanupInvalidTitles(target);
+        MessageUtil.sendPrefixedMessage(sender, "title.cleanup-success", "count", String.valueOf(cleanedCount));
         return true;
     }
 
@@ -801,7 +634,7 @@ public class TitleCommand implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> completions = new ArrayList<>();
-        
+
         if (args.length == 1) {
             // 第一个参数：子命令
             List<String> subCommands = Arrays.asList("gui", "set", "remove", "list", "info");
@@ -809,15 +642,15 @@ public class TitleCommand implements CommandExecutor, TabCompleter {
                 subCommands = new ArrayList<>(subCommands);
                 subCommands.addAll(Arrays.asList("give", "take", "reload", "cleanup"));
             }
-            
+
             return subCommands.stream()
                     .filter(cmd -> cmd.toLowerCase().startsWith(args[0].toLowerCase()))
                     .collect(Collectors.toList());
         }
-        
+
         if (args.length == 2) {
             String subCommand = args[0].toLowerCase();
-            
+
             if ("set".equals(subCommand)) {
                 // set命令：只显示已解锁的称号显示名
                 if (sender instanceof Player) {
@@ -832,7 +665,7 @@ public class TitleCommand implements CommandExecutor, TabCompleter {
                             .collect(Collectors.toList());
                 }
             } else if ("info".equals(subCommand)) {
-                // info命令：显示所有称号的显示名
+                // info命令：显示所有称号显示名
                 Map<String, TitleInfo> allTitles = configManager.getAllTitles();
                 return allTitles.values().stream()
                         .map(titleInfo -> titleInfo.getDisplayName().replaceAll("§[0-9a-fk-or]", ""))
@@ -845,20 +678,22 @@ public class TitleCommand implements CommandExecutor, TabCompleter {
                         .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                         .collect(Collectors.toList());
             } else if ("cleanup".equals(subCommand)) {
-                // cleanup子命令补全
+                // cleanup子命令
                 return Arrays.asList("all", "player").stream()
                         .filter(cmd -> cmd.toLowerCase().startsWith(args[1].toLowerCase()))
                         .collect(Collectors.toList());
             }
         }
-        
+
         if (args.length == 3) {
             String subCommand = args[0].toLowerCase();
 
             if ("give".equals(subCommand) || "take".equals(subCommand)) {
-                // 称号ID补全
-                return configManager.getAllTitles().keySet().stream()
-                        .filter(title -> title.toLowerCase().startsWith(args[2].toLowerCase()))
+                // 称号显示名补全
+                Map<String, TitleInfo> allTitles = configManager.getAllTitles();
+                return allTitles.values().stream()
+                        .map(titleInfo -> titleInfo.getDisplayName().replaceAll("§[0-9a-fk-or]", ""))
+                        .filter(displayName -> displayName.toLowerCase().startsWith(args[2].toLowerCase()))
                         .collect(Collectors.toList());
             } else if ("cleanup".equals(subCommand) && "player".equals(args[1].toLowerCase())) {
                 // cleanup player 玩家名补全
@@ -868,7 +703,7 @@ public class TitleCommand implements CommandExecutor, TabCompleter {
                         .collect(Collectors.toList());
             }
         }
-        
+
         return completions;
     }
 }

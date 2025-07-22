@@ -1,10 +1,10 @@
 name: zPrefix
 version: '${version}'
 main: com.github.chengge.zprefix.ZPrefix
-api-version: '1.20'
+api-version: '1.21'
 author: chengge
 description: 玩家称号系统插件，支持称号切换和属性加成
-softdepend: [SagaLoreStats, PlaceholderAPI]
+softdepend: [SagaLoreStats, PlaceholderAPI, Vault, PlayerPoints]
 
 commands:
   title:
